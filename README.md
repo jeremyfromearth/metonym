@@ -27,7 +27,7 @@ Consider the excerpt from the Wikipedia article for Roland JX3P...
 
 Below is an example of a command that creates 79 analogous variations of the simple question above.
 ```
-[Who:make | [What | which] [company | brand)]:make] [created|built|designed|made] the [JX-3P (synthesizer | keyboard | synth)]:model?
+[Who:make | [What | which] [company | brand)]:make] [created|built|designed|produced] the [JX-3P (synthesizer | keyboard | synth)]:model?
 ```
 ... the 79 variations
 ```
@@ -91,24 +91,24 @@ Which brand designed the JX3P?
 Which brand designed the JX3P synthesizer?
 Which brand designed the JX3P keyboard?
 Which brand designed the JX3P synth?
-Who made the JX3P?
-Who made the JX3P synthesizer?
-Who made the JX3P keyboard?
-Who made the JX3P synth?
-What company made the JX3P?
-What company made the JX3P synthesizer?
-What company made the JX3P keyboard?
-What company made the JX3P synth?
-What brand made the JX3P?
-What brand made the JX3P synthesizer?
-What brand made the JX3P keyboard?
-What brand made the JX3P synth?
-Which company made the JX3P?
-Which company made the JX3P synthesizer?
-Which company made the JX3P keyboard?
-Which company made the JX3P synth?
-Which brand made the JX3P?
-Which brand made the JX3P synthesizer?
-Which brand made the JX3P keyboard?
-Which brand made the JX3P synth?
+Who produced the JX3P?
+Who produced the JX3P synthesizer?
+Who produced the JX3P keyboard?
+Who produced the JX3P synth?
+What company produced the JX3P?
+What company produced the JX3P synthesizer?
+What company produced the JX3P keyboard?
+What company produced the JX3P synth?
+What brand produced the JX3P?
+What brand produced the JX3P synthesizer?
+What brand produced the JX3P keyboard?
+What brand produced the JX3P synth?
+Which company produced the JX3P?
+Which company produced the JX3P synthesizer?
+Which company produced the JX3P keyboard?
+Which company produced the JX3P synth?
+Which brand produced the JX3P?
+Which brand produced the JX3P synthesizer?
+Which brand produced the JX3P keyboard?
+Which brand produced the JX3P synth?
 ```
