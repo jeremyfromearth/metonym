@@ -2,14 +2,6 @@
 Domain specific language for generating analogous variations of textual inputs
 
 ### Grammar:
-__Symbols__
-```
-LBRACKET = [
-RBRACKET = ] 
-LPAREN = (
-RPAREN = )
-COLON = :
-```
 __Rules__
 ```
 expression = string, optional, required, {string | optional | required}
