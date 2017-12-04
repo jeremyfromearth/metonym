@@ -5,12 +5,14 @@ Domain specific language for generating analogous variations of textual inputs
 __Rules__
 ```
 expression = string, optional, required, {string | optional | required}
-requried = '[' (string, entity, optional) ']';
-optional = '(' (string '|' optional) ')';
+requried = '[' string, entity, optional ']';
+optional = '(' string '|' optional ')';
 string = term, {term};
 entity = term ':' term
 term = char, {char};
-char = \[a-Z]\;
+char: [a-zA-Z0-9+]
+    TERMCHAR: [^()/\\=\t\r\n] | ESCAPE
+
 ```
 ### Example
 Consider the excerpt from the Wikipedia article for Roland JX3P...
