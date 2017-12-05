@@ -26,7 +26,8 @@ puncation = "." | "?" | "!" ;
 
 ### Example
 Consider the excerpt from the Wikipedia article for Roland JX3P...
-> The Roland JX-3P is a synthesizer produced by Roland Corporation of Japan in 1983. .  
+> The Roland JX-3P is a synthesizer produced by Roland Corporation of Japan in 1983.
+
 ... and the various ways in which one could ask the question the question "Who made the JX-3P?"..
 
 __Syntax Example__
