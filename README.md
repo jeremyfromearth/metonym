@@ -1,29 +1,72 @@
 # metonym
-Domain specific language for generating analogous variations of textual inputs
+Domain specific language for generating analogous variations of textual inputs. 
 
 ### Grammar:
 __Rules__
 ```
-expression = string, optional, required, {string | optional | required}
-requried = '[' string, entity, optional ']';
-optional = '(' string '|' optional ')';
+expression = (string | optional | requirement), {string, optional | requirement};
+entity = (string | requirement | optional) ':' string;
+requirement = '[' string, entity, optional, requirement ']';
+optional = '(' {option} ')';
+option = [string '|', optional '|', requirement '|'];
 string = term, {term};
-entity = term ':' term
 term = char, {char};
-char: [a-zA-Z0-9+]
-    TERMCHAR: [^()/\\=\t\r\n] | ESCAPE
-
+char = letter, digit, puncuation;
+letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+       | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+       | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+       | "V" | "W" | "X" | "Y" | "Z" | "a" | "b"
+       | "c" | "d" | "e" | "f" | "g" | "h" | "i"
+       | "j" | "k" | "l" | "m" | "n" | "o" | "p"
+       | "q" | "r" | "s" | "t" | "u" | "v" | "w"
+       | "x" | "y" | "z" ;
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+puncation = "." | "?" | "!" ;
 ```
+
 ### Example
 Consider the excerpt from the Wikipedia article for Roland JX3P...
 > The Roland JX-3P is a synthesizer produced by Roland Corporation of Japan in 1983. .  
 ... and the various ways in which one could ask the question the question "Who made the JX-3P?"..
 
-Below is an example of a command that creates 79 analogous variations of the simple question above.
+__Syntax Example__
 ```
-[Who:make | [What | which] [company | brand)]:make] [created|built|designed|produced] the [JX-3P (synthesizer | keyboard | synth)]:model?
+[(Who | [[What | which] [company | brand)]])]:make [created|built|designed|produced] the [JX-3P (synthesizer | keyboard | synth)]:model?
 ```
-... the 79 variations
+
+__AST (Abstract Syntax Tree) Example__
+```
+Expression:
+    Entity: make
+        Requirement:
+            Optional:
+                Option: who
+                Option:
+                    Requirement:
+                        Requirement:
+                            Optional:
+                                Option: what
+                                Option: which
+                        Requirement:
+                            Optional:
+                                Option: company
+                                Option: brand
+    Required:
+        Optional:
+            Option: created
+            Option: built
+            Option: designed
+            Option: produced
+    String: the
+    Entity: model
+        Required:
+            string: JX-3P
+            Optional:
+                Option: synthesizer
+                Option: keyboard
+```
+
+__Variations__
 ```
 Who created the JX3P?
 Who created the JX3P synthesizer?
