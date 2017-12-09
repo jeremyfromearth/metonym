@@ -4,6 +4,7 @@ import itertools
 
 class Parser:
   def __init__(self):
+    self.depth = 0
     self.input = ''
     self.index = 0
     self.output = None
@@ -12,33 +13,56 @@ class Parser:
     """
     Invokes the creation of an abstract syntax tree through recursive decent parsing
     """
+    self.depth = 0
     self.index = 0
     self.input = input_str
     self.output = self.expr() 
     return self.output
 
-  def expr(self):
-    # override w/ sub-class
-    pass
+  def expr(self): pass
 
   # primitive functions
   def first_of(self, rules):
     """
     Return the result of the first rule that returns a valid result
     """
-    pass
+    for rule in rules:
+      bt = self.index
+      result = rule()
+      if result is not None:
+        return result
+      else:
+        self.index = bt
 
   def one_or_more(self, rule):
     """
     Return the valid result of one or more rules
     """
-    pass
+    results = []
+    predicate = True
+    while predicate:
+      bt = self.index  
+      self.depth += 1
+      result = rule()
+      self.depth -= 1
+      if result is None:
+        self.index = bt
+        predicate = false
+      else:
+        results.push(result)
+    if len(results):
+      return results
+    else:
+      self.index = bt
 
   def required(self, rule):
     """
     Returns the result of a rule or throws if the result is None
     """
-    pass
+    result = rule()
+    if not result:
+      raise Error('The rule {} was required, but failed to output a valid result', rule.__name__)  
+    return result
 
   # utility functions
   def match(self, pattern):
@@ -87,9 +111,6 @@ class MetonymParser(Parser):
     node = None
     return node
 
-
 if __name__ == '__main__':
   p = Parser()
-  p.go(' hello world')
-  p.char('')
-  print(p.index)
+  p.go('What [(city | town | province | village | bourough] [(were you born in | did you grow up in)]')
