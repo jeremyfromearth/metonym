@@ -10,7 +10,7 @@ requirement = '[' string, entity, optional, requirement ']';
 optional = '(' {option} ')';
 option = [string '|', optional '|', requirement '|'];
 string = term, {term};
-term = char, {char | };
+term = char, {char};
 char = letter, digit;
 letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
        | "H" | "I" | "J" | "K" | "L" | "M" | "N"
