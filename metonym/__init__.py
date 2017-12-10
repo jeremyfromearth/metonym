@@ -2,7 +2,18 @@ import re
 import string
 import itertools
 
+class ASTNode:
+  """
+  A simple class containing a name and list of children nodes
+  """
+  def __init__(self, name):
+    self.name = name
+    self.children = []
+
 class Parser:
+  """
+  The base Parser class. It provides a few utility methods and a method to override (expression) in sub-classes
+  """
   def __init__(self):
     self.depth = 0
     self.input = ''
@@ -16,10 +27,16 @@ class Parser:
     self.depth = 0
     self.index = 0
     self.input = input_str
-    self.output = self.expr() 
+    self.output = ASTNode('expression-list')
+
+    tree = self.one_or_more(self.expression)
+    if tree is not None:
+      self.output.children = self.collapse(tree) 
     return self.output
 
-  def expr(self): pass
+  def expression(self): 
+    # override in sub-classes
+    return None
 
   # primitive functions
   def first_of(self, rules):
@@ -47,7 +64,7 @@ class Parser:
       self.depth -= 1
       if result is None:
         self.index = bt
-        predicate = false
+        predicate = False
       else:
         results.push(result)
     if len(results):
@@ -107,10 +124,11 @@ class MetonymParser(Parser):
   def __init__(self):
     pass
 
-  def expr():
-    node = None
+  def expression():
+    node = ASTNode('expression')
     return node
 
 if __name__ == '__main__':
   p = Parser()
-  p.go('What [(city | town | province | village | bourough] [(were you born in | did you grow up in)]')
+  node = p.go('What [(city | town | province | village | bourough] [(were you born in | did you grow up in)]')
+  print(vars(node))
