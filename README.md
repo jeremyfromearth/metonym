@@ -4,6 +4,7 @@ Domain specific language for generating analogous variations of textual inputs.
 ### Grammar:
 __Rules__
 ```
+expression_list = expression, expression-list
 expression = (string | optional | requirement), {string, optional | requirement};
 entity = (string | requirement | optional) ':' string;
 requirement = '[' string, entity, optional, requirement ']';
