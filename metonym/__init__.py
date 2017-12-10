@@ -4,11 +4,11 @@ import itertools
 
 class ASTNode:
   """
-  A simple class containing a name and list of children nodes
+  A simple class containing a name and list of leaf nodes
   """
   def __init__(self, name):
     self.name = name
-    self.children = []
+    self.branches = []
 
 class Parser:
   """
@@ -28,10 +28,9 @@ class Parser:
     self.index = 0
     self.input = input_str
     self.output = ASTNode('expression-list')
-
     tree = self.one_or_more(self.expression)
     if tree is not None:
-      self.output.children = self.collapse(tree) 
+      self.output.branches = self.collapse(tree) 
     return self.output
 
   def expression(self): 
