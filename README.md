@@ -3,11 +3,11 @@ Domain specific language for generating analogous variations of textual inputs. 
 
 ### Grammar:
 ```
-expression_list = expression, expression-list
-expression = (string | optional | requirement), {string, optional | requirement};
-entity = (string, requirement, optional) ':' string;
+expression-list = expression, {expression}
+expression = (string | optional | requirement) (entity), {string | optional | requirement} (entity);
 requirement = '[' (string | optional | requirement), {string | optional | requirement} ']';
 optional = '(' (string | optional | requirement), {string | optional | requirement} ')';
+entity = ':' string;
 string = term, {term};
 term = char, {char};
 char = letter, digit;
