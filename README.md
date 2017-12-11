@@ -1,8 +1,7 @@
 # metonym
-Domain specific language for generating analogous variations of textual inputs. 
+Domain specific language for generating analogous variations of textual inputs. The goal of this language is to output variations of text with annotations for entities for use in systems such as Rasa NLU. 
 
 ### Grammar:
-__Rules__
 ```
 expression_list = expression, expression-list
 expression = (string | optional | requirement), {string, optional | requirement};
@@ -67,86 +66,38 @@ Expression:
                 Option: keyboard
 ```
 
-__Variations__
+__Example Variations__ (clearly there are more variations)
 ```
 Who created the JX3P?
+What company created the JX3P?
+What brand created the JX3P?
 Who created the JX3P synthesizer?
 Who created the JX3P keyboard?
 Who created the JX3P synth?
-What company created the JX3P?
-What company created the JX3P synthesizer?
-What company created the JX3P keyboard?
-What company created the JX3P synth?
-What brand created the JX3P?
-What brand created the JX3P synthesizer?
-What brand created the JX3P keyboard?
-What brand created the JX3P synth?
-Which company created the JX3P?
-Which company created the JX3P synthesizer?
-Which company created the JX3P keyboard?
-Which company created the JX3P synth?
-Which brand created the JX3P?
 Which brand created the JX3P synthesizer?
-Which brand created the JX3P keyboard?
-Which brand created the JX3P synth?
-Who built the JX3P?
-Who built the JX3P synthesizer?
-Who built the JX3P keyboard?
-Who built the JX3P synth?
-What company built the JX3P?
-What company built the JX3P synthesizer?
-What company built the JX3P keyboard?
-What company built the JX3P synth?
-What brand built the JX3P?
-What brand built the JX3P synthesizer?
-What brand built the JX3P keyboard?
-What brand built the JX3P synth?
-Which company built the JX3P?
-Which company built the JX3P synthesizer?
-Which company built the JX3P keyboard?
-Which company built the JX3P synth?
-Which brand built the JX3P?
-Which brand built the JX3P synthesizer?
-Which brand built the JX3P keyboard?
-Which brand built the JX3P synth?
-Who designed the JX3P?
-Who designed the JX3P synthesizer?
-Who designed the JX3P keyboard?
-Who designed the JX3P synth?
-What company designed the JX3P?
-What company designed the JX3P synthesizer?
 What company designed the JX3P keyboard?
-What company designed the JX3P synth?
-What brand designed the JX3P?
-What brand designed the JX3P synthesizer?
-What brand designed the JX3P keyboard?
-What brand designed the JX3P synth?
-Which company designed the JX3P?
-Which company designed the JX3P synthesizer?
-Which company designed the JX3P keyboard?
-Which company designed the JX3P synth?
-Which brand designed the JX3P?
-Which brand designed the JX3P synthesizer?
-Which brand designed the JX3P keyboard?
-Which brand designed the JX3P synth?
-Who produced the JX3P?
-Who produced the JX3P synthesizer?
-Who produced the JX3P keyboard?
-Who produced the JX3P synth?
-What company produced the JX3P?
-What company produced the JX3P synthesizer?
-What company produced the JX3P keyboard?
-What company produced the JX3P synth?
-What brand produced the JX3P?
-What brand produced the JX3P synthesizer?
-What brand produced the JX3P keyboard?
-What brand produced the JX3P synth?
-Which company produced the JX3P?
-Which company produced the JX3P synthesizer?
-Which company produced the JX3P keyboard?
-Which company produced the JX3P synth?
-Which brand produced the JX3P?
-Which brand produced the JX3P synthesizer?
-Which brand produced the JX3P keyboard?
-Which brand produced the JX3P synth?
+...
+```
+
+__Rasa NLU Training Data Format__
+
+Note that currently, the "intent" is not part of the syntax as it would be the same for each variation and can be added later when the training data is generated.
+```
+{
+  "text": "Which brand created the JX3P synthesizer?",
+  "intent": "synthesizer_make_query",
+  "entities": [
+    {
+      "start": 0,
+      "end": 11,
+      "value": "Which brand",
+      "entity": "make"
+    }, {
+       "start": 24, 
+       "end": 41,
+       "value": "JX3P synthesizer", 
+       "entity": "make"
+    }
+  ]
+}
 ```
