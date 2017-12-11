@@ -5,10 +5,9 @@ Domain specific language for generating analogous variations of textual inputs. 
 ```
 expression_list = expression, expression-list
 expression = (string | optional | requirement), {string, optional | requirement};
-entity = (string | requirement | optional) ':' string;
-requirement = '[' string, entity, optional, requirement ']';
-optional = '(' {option} ')';
-option = [string '|', optional '|', requirement '|'];
+entity = (string, requirement, optional) ':' string;
+requirement = '[' (string | optional | requirement), {string | optional | requirement} ']';
+optional = '(' (string | optional | requirement), {string | optional | requirement} ')';
 string = term, {term};
 term = char, {char};
 char = letter, digit;
