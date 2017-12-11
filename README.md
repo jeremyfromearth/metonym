@@ -1,5 +1,5 @@
 # metonym
-Domain specific language for generating analogous variations of textual inputs. The goal of this language is to output variations of text with annotations for entities for use in systems such as Rasa NLU. 
+Domain specific language for generating analogous variations of textual inputs. The goal of this project is to more readily generate variations of text with entity annotations for use in systems such as Rasa NLU. 
 
 ### Grammar:
 ```
