@@ -3,8 +3,8 @@ Domain specific language for generating analogous variations of textual inputs. 
 
 ### Grammar:
 ```
-expression-list = (expression), {expression | optional};
-expression = (requirement | string) [entity];
+expression-list = (expression), {expression};
+expression = (requirement | string) [entity] [optional];
 requirement = '[' option-list | string | requirement ']';
 optional = '(' option-list | string ')';
 option-list = {option} string;
@@ -81,10 +81,10 @@ Expression List:
     Entity: make
     Requirement:
         string: JX-3P
-  Optional:
-    Option List
-      Option: synthesizer
-      Option: keyboard
+    Optional:
+      Option List
+        Option: synthesizer
+        Option: keyboard
 ```
 
 __Example Variations__ (clearly there are more variations)
