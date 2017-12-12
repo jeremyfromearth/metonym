@@ -63,7 +63,7 @@ Expression List:
       Option: produced
   Expression:
     String: the
-  Expression:
+  Entity-Expression:
     Required:
       Entity: model
         string: JX-3P
