@@ -25,7 +25,7 @@ digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 ```
 
 ### Example
-Consider the excerpt from the Wikipedia article for the Roland JX3P Synthesizer...
+Consider the excerpt from the [Wikipedia article for the Roland JX-3P Synthesizer](https://en.wikipedia.org/wiki/Roland_JX-3P)...
 > The Roland JX-3P is a synthesizer produced by Roland Corporation of Japan in 1983.
 
 ... and the various ways in which one could ask the question the question "Who made the JX-3P?"..
