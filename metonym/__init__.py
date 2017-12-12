@@ -2,35 +2,43 @@ import re
 import string
 import itertools
 
-class ASTNode:
+class Node:
   """
   A simple class containing a name and list of leaf nodes
   """
-  def __init__(self, name):
-    self.name = name
-    self.branches = []
+  def __init__(self, node_type):
+    self.type = node_type
+    self.value = ''
+    self.nodes = []
+
+  def __repr__(self):
+    return self.__str__()
+
+  def __str__(self):
+    return str(vars(self))
 
 class Parser:
   """
-  The base Parser class. It provides a few utility methods and a method to override (expression) in sub-classes
+  The base Parser class
+  Provides a few utility methods and a method to override (expression) in sub-classes
   """
   def __init__(self):
     self.depth = 0
-    self.input = ''
     self.index = 0
     self.output = None
+    self.tokens = []
 
-  def go(self, input_str):
+  def go(self, input_string):
     """
     Invokes the creation of an abstract syntax tree through recursive decent parsing
     """
     self.depth = 0
     self.index = 0
-    self.input = input_str
-    self.output = ASTNode('expression-list')
+    self.tokens = re.findall(r"[\w\_\-']+|[\|\[\]\(\)]", input_string)
+    self.output = Node('expression-list')
     tree = self.one_or_more(self.expression)
-    if tree is not None:
-      self.output.branches = self.collapse(tree) 
+    if tree:
+      self.output.nodes = self.collapse(tree) 
     return self.output
 
   def expression(self): 
@@ -44,9 +52,9 @@ class Parser:
     """
     for rule in rules:
       bt = self.index
-      result = rule()
-      if result is not None:
-        return result
+      node = rule()
+      if node:
+        return node
       else:
         self.index = bt
 
@@ -54,64 +62,73 @@ class Parser:
     """
     Return the valid result of one or more rules
     """
-    results = []
+    nodes = []
     predicate = True
-    while predicate:
-      bt = self.index  
+    while predicate and self.index < len(self.tokens):
       self.depth += 1
-      result = rule()
+      node = rule()
       self.depth -= 1
-      if result is None:
-        self.index = bt
+      if node is None:
         predicate = False
       else:
-        results.push(result)
-    if len(results):
-      return results
-    else:
-      self.index = bt
+        nodes.append(node)
+    if len(nodes):
+      return nodes
+
+  def zero_or_more(self, rule):
+    nodes = []
+    keep_going = True
+    while keep_going:
+      node = rule()
+      if node:
+        nodes.append(node)
+        self.index += 1
+      else:
+        keep_going = False
+
+    if len(nodes):
+      return nodes
 
   def required(self, rule):
     """
     Returns the result of a rule or throws if the result is None
     """
-    result = rule()
-    if not result:
+    node = rule()
+    if not node:
       raise Error('The rule {} was required, but failed to output a valid result', rule.__name__)  
-    return result
+    return node
 
   # utility functions
   def match(self, pattern):
     """
     Returns the result of a regex match at a specific index, None otherwise
     """
-    if self.index < len(self.input):
-      m = re.match(pattern, self.input)
-      if m is not None:
+    if self.index < len(self.tokens):
+      m = re.match(pattern, self.tokens[self.index])
+      if m:
         value = m.group(0)
-        self.index += len(value)
+        self.index += 1
         return value
     return None
 
-  def char(self, c):
+  def look_at_char(self, expected, offset):
+    """
+    Returns a boolean indicating that the value of the token at the offset from the current index equals the expectation
+    """
+    idx = self.index + offset
+    if idx < len(self.tokens):
+      return self.tokens[idx] == expected
+    return False
+
+  def is_char(self, c):
     """
     Return a boolean indicating whether or not the next character in the input matches the supplied parameter
     """
-    if self.index < len(self.input):
-      if self.input[self.index] == c:
+    if self.index < len(self.tokens):
+      if self.tokens[self.index] == c:
         self.index += 1
         return True
     return False
-
-  def ignore_whitespace(self):
-    """
-    Advances index until a non whitespace character is reached
-    """
-    while self.index < len(self.input):
-      if self.input[self.index] in string.whitespace:
-        self.index += 1
-      else:
-        break
 
   def collapse(self, l):
     """
@@ -121,13 +138,48 @@ class Parser:
 
 class MetonymParser(Parser):
   def __init__(self):
+    super(MetonymParser, self).__init__()
+
+  def expression(self):
+    return self.string()
+
+  def requirement(self):
     pass
 
-  def expression():
-    node = ASTNode('expression')
-    return node
+  def option_list(self):
+    bt = self.index
+    pass
+
+  def option(self):
+    bt = self.index
+    st = self.string()
+    pipe = is_char('|')
+    if st and pipe:
+      node = Node('option')
+      node.value = st
+    pass
+
+  def entity(self):
+    colon = self.is_char(':')
+    if colon:
+      estr = self.string()
+      if estr:
+        node = Node('entity')
+        node.value = estr.value
+        return 
+
+  def string(self):
+    return self.one_or_more(self.term)
+
+  def term(self):
+    m = self.match("[\w\-\_]+")
+    if m:
+      result = Node('term')
+      result.value = m
+      return [result]
 
 if __name__ == '__main__':
-  p = Parser()
-  node = p.go('What [(city | town | province | village | bourough] [(were you born in | did you grow up in)]')
-  print(vars(node))
+  p = MetonymParser()
+  n = p.go('hello world')
+  print(p.tokens)
+  print(n)
