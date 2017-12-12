@@ -3,13 +3,13 @@ Domain specific language for generating analogous variations of textual inputs. 
 
 ### Grammar:
 ```
-expression-list = expression | entity-expression, {expression | entity-expression};
+expression-list = (expression | entity-expression), {expression | entity-expression | optional};
 entity-expression = expression entity;
-expression = string | requirement | optional;
-requirement = '[' option | {option} ']';
-optional = '(' option-list ')';
-option-list = option string;
-option = string '|', {option '|'};
+expression = string | requirement;
+requirement = '[' string | option-list | requirement ']';
+optional = '(' option-list | string ')';
+option-list = {option} string;
+option = (string, requirement) '|';
 entity = ':' string;
 string = term, {term};
 term = char, {char};
@@ -25,6 +25,19 @@ letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
 digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
 ```
 
+**Simple Example:** `requirement[option-list] optional[string]`
+```
+input:
+  [this|that|another] (thing)
+output:
+  this
+  that
+  another
+  this thing
+  that thing
+  another thing
+```
+
 ### Example
 Consider the excerpt from the [Wikipedia article for the Roland JX-3P Synthesizer](https://en.wikipedia.org/wiki/Roland_JX-3P)...
 > The Roland JX-3P is a synthesizer produced by Roland Corporation of Japan in 1983.
@@ -33,42 +46,44 @@ Consider the excerpt from the [Wikipedia article for the Roland JX-3P Synthesize
 
 __Syntax Example__
 ```
-[Who | [What | which] [company | brand]]:make [created|built|designed|produced] the [JX-3P:model] (synthesizer|keyboard|synth)?
+[Who | [What | which] [company | brand]]:make [created|built|designed|produced] the [JX-3P]:make (synthesizer|keyboard|synth)?
 ```
-
-Note: 
-* An optional can not contain requirements, but a requirement can have options
 
 __AST (Abstract Syntax Tree) Example__
 ```
 Expression List:
-  Entity-Expression: make
+  Entity-Expression: 
+    Entity:
+      make
     Requirement:
-      Option: 
-        who
-      Option:
-        Requirement:
-          Option: 
-            what
-          Option: 
-            which
+      Option List
+        Option: 
+          who
+        Option:
+          Requirement:
+            Option List
+              Option: 
+                what
+              Option: 
+                which
           Requirement:
             Option: company
             Option: brand
   Expression:
     Required:
-      Option: created
-      Option: built
-      Option: designed
-      Option: produced
+      Option List
+        Option: created
+        Option: built
+        Option: designed
+        Option: produced
   Expression:
     String: the
   Entity-Expression:
-    Required:
-      Entity: model
+    Entity: make
+    Requirement:
         string: JX-3P
-  Expression:
-    Optional:
+  Optional:
+    Option List
       Option: synthesizer
       Option: keyboard
 ```
