@@ -12,10 +12,12 @@ class Node:
     self.nodes = []
 
   def __repr__(self):
-    return self.__str__()
+    return str(vars(self))
 
   def __str__(self):
-    return str(vars(self))
+    s = self.__repr__().replace("'", '"')
+    j = json.loads(s)
+    return json.dumps(j, indent=1, sort_keys=True)
 
 class Parser:
   """
@@ -34,11 +36,11 @@ class Parser:
     """
     self.depth = 0
     self.index = 0
-    self.tokens = re.findall(r"[\w\_\-']+|[\|\[\]\(\)]", input_string)
+    self.tokens = re.findall(r"[\w\_\-']+|[\|\[\]\(\):]", input_string)
     self.output = Node('expression-list')
     tree = self.one_or_more(self.expression)
     if tree:
-      self.output.nodes = self.collapse(tree) 
+      self.output.nodes = tree
     return self.output
 
   def expression(self): 
@@ -52,9 +54,9 @@ class Parser:
     """
     for rule in rules:
       bt = self.index
-      node = rule()
-      if node:
-        return node
+      result = rule()
+      if result:
+        return result
       else:
         self.index = bt
 
@@ -65,11 +67,13 @@ class Parser:
     nodes = []
     predicate = True
     while predicate and self.index < len(self.tokens):
+      bt = self.index
       self.depth += 1
       node = rule()
       self.depth -= 1
       if node is None:
         predicate = False
+        self.index = bt
       else:
         nodes.append(node)
     if len(nodes):
@@ -111,16 +115,7 @@ class Parser:
         return value
     return None
 
-  def look_at_char(self, expected, offset):
-    """
-    Returns a boolean indicating that the value of the token at the offset from the current index equals the expectation
-    """
-    idx = self.index + offset
-    if idx < len(self.tokens):
-      return self.tokens[idx] == expected
-    return False
-
-  def is_char(self, c):
+  def next_char_is(self, c):
     """
     Return a boolean indicating whether or not the next character in the input matches the supplied parameter
     """
@@ -140,46 +135,103 @@ class MetonymParser(Parser):
   def __init__(self):
     super(MetonymParser, self).__init__()
 
+  # expression = [optional] (requirement | string) [entity] [optional];
   def expression(self):
-    return self.string()
+    lh_optionals = self.zero_or_more(self.optional)
+    result = self.first_of([
+        self.requirement,
+        self.string
+      ])
 
+    if result:
+      entity = self.entity()
+      rl_optionals = self.zero_or_more(self.optional)
+      node = Node('expression')
+      node.nodes = self.collapse([
+          lh_optionals or [],
+          [result], 
+          entity or [],
+          rl_optionals or []
+        ])
+      return [node]
+
+  # requirement = '[' option-list | string | requirement ']';
   def requirement(self):
-    pass
+    if self.next_char_is('['):
+      result = self.first_of([
+        self.option_list,
+        self.string,
+        self.requirement
+      ])
+      if result and self.next_char_is(']'):
+        node = Node('requirement')
+        node.children = result
+        return node
+
+  # optional = '(' option-list | string ')';
+  def optional(self):
+    if self.next_char_is('('):
+      result = self.first_of([
+          self.option_list,
+          self.string
+        ])
+      if result:
+        if self.next_char_is(')'):
+          node = Node('optional')
+          node.nodes = result
+          return [node]
 
   def option_list(self):
-    bt = self.index
-    pass
+    options = self.one_or_more(self.option) 
+    if options:
+      string = self.string()
+      if string:
+        option = Node('option')
+        option.nodes = [string]
+        node = Node('option-list')
+        node.nodes = self.collapse([options, [option]])
+        return [node]
 
   def option(self):
-    bt = self.index
-    st = self.string()
-    pipe = is_char('|')
-    if st and pipe:
-      node = Node('option')
-      node.value = st
-    pass
+    lhs = self.first_of([
+        self.requirement,
+        self.string
+      ])
+    if lhs:
+      pipe = self.next_char_is('|')
+      if pipe:
+        node = Node('option')
+        node.nodes = lhs
+        return [node]
 
   def entity(self):
-    colon = self.is_char(':')
+    colon = self.next_char_is(':')
     if colon:
-      estr = self.string()
-      if estr:
+      term = self.term()
+      if term:
         node = Node('entity')
-        node.value = estr.value
-        return 
+        node.value = term.value
+        return [node]
 
   def string(self):
-    return self.one_or_more(self.term)
+    result = self.one_or_more(self.term)
+    if result:
+      node = Node('string')
+      node.nodes = result
+      return [node]
 
   def term(self):
     m = self.match("[\w\-\_]+")
     if m:
-      result = Node('term')
-      result.value = m
-      return [result]
+      node = Node('term')
+      node.value = m
+      return [node]
 
 if __name__ == '__main__':
+  import json
+  from json import tool
   p = MetonymParser()
-  n = p.go('hello world')
+  n = p.go('[hello i am a required string | i am something else] [synthesizer]')
   print(p.tokens)
-  print(n)
+  print(str(p.output))
+
