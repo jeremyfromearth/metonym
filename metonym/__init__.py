@@ -27,6 +27,8 @@ class Parser:
   def __init__(self):
     self.depth = 0
     self.index = 0
+    self.logging = True
+    self.logline = 0
     self.output = None
     self.tokens = []
 
@@ -36,16 +38,16 @@ class Parser:
     """
     self.depth = 0
     self.index = 0
+    self.logline = 0
     self.tokens = re.findall(r"[\w\_\-']+|[\|\[\]\(\):]", input_string)
     self.output = Node('expression-list')
-    tree = self.one_or_more(self.expression)
+    tree = self.expression_list()
     if tree:
       self.output.nodes = tree
     return self.output
 
-  def expression(self): 
-    # override in sub-classes
-    return None
+  def expression_list(self): 
+    return self.one_or_more(self.expression)
 
   # primitive functions
   def first_of(self, rules):
@@ -53,12 +55,18 @@ class Parser:
     Return the result of the first rule that returns a valid result
     """
     for rule in rules:
+      self.depth += 1
       bt = self.index
+      self.log('first_of invoking {}'.format(rule.__name__))
       result = rule()
+      self.depth -= 1
       if result:
+        self.log('first_of {} is valid'.format(rule.__name__))
         return result
       else:
+        self.depth -= 1
         self.index = bt
+        pass
 
   def one_or_more(self, rule):
     """
@@ -69,12 +77,14 @@ class Parser:
     while predicate and self.index < len(self.tokens):
       bt = self.index
       self.depth += 1
+      self.log('one_or_more invoking {}'.format(rule.__name__))
       node = rule()
       self.depth -= 1
       if node is None:
         predicate = False
         self.index = bt
       else:
+        self.log('one_or_more {} is valid'.format(rule.__name__))
         nodes.append(node)
     if len(nodes):
       return nodes
@@ -83,7 +93,10 @@ class Parser:
     nodes = []
     keep_going = True
     while keep_going:
+      self.depth += 1
+      self.log('zero_or_more invoking {}'.format(rule.__name__))
       node = rule()
+      self.depth -= 1
       if node:
         nodes.append(node)
         self.index += 1
@@ -131,12 +144,28 @@ class Parser:
     """
     return list(itertools.chain.from_iterable(l))
 
+  def  get_indent(self):
+    indentation = ''
+    for i in range(0, self.depth):
+      indentation += '|-'
+    return indentation
+
+  def log(self, msg): 
+    if self.logging:
+        logline_str = str(self.logline);
+        if self.logline < 10:
+          logline_str = "00" + logline_str
+        if self.logline >= 10 and self.logline < 100:
+          logline_str = "0" + logline_str
+        self.logline += 1
+        print('{}. {} {} :: {}'.format(logline_str, self.index, self.get_indent(), msg))
+
 class MetonymParser(Parser):
   def __init__(self):
     super(MetonymParser, self).__init__()
 
-  # expression = [optional] (requirement | string) [entity] [optional];
   def expression(self):
+    self.log('expression')
     lh_optionals = self.zero_or_more(self.optional)
     result = self.first_of([
         self.requirement,
@@ -155,21 +184,23 @@ class MetonymParser(Parser):
         ])
       return [node]
 
-  # requirement = '[' option-list | string | requirement ']';
   def requirement(self):
+    self.log('requirement')
     if self.next_char_is('['):
       result = self.first_of([
         self.option_list,
         self.string,
         self.requirement
       ])
-      if result and self.next_char_is(']'):
-        node = Node('requirement')
-        node.children = result
-        return node
 
-  # optional = '(' option-list | string ')';
+      if result:
+        if self.next_char_is(']'):
+          node = Node('requirement')
+          node.nodes = result
+          return [node]
+
   def optional(self):
+    self.log('optional')
     if self.next_char_is('('):
       result = self.first_of([
           self.option_list,
@@ -182,21 +213,28 @@ class MetonymParser(Parser):
           return [node]
 
   def option_list(self):
+    self.log('option_list')
     options = self.one_or_more(self.option) 
     if options:
-      string = self.string()
-      if string:
+      last_option = self.first_of([
+          self.string,
+          self.requirement
+        ])
+
+      if last_option:
         option = Node('option')
-        option.nodes = [string]
+        option.nodes = [last_option]
         node = Node('option-list')
         node.nodes = self.collapse([options, [option]])
         return [node]
 
   def option(self):
+    self.log('option')
     lhs = self.first_of([
+        self.string,
         self.requirement,
-        self.string
       ])
+
     if lhs:
       pipe = self.next_char_is('|')
       if pipe:
@@ -205,6 +243,7 @@ class MetonymParser(Parser):
         return [node]
 
   def entity(self):
+    self.log('entity')
     colon = self.next_char_is(':')
     if colon:
       term = self.term()
@@ -214,6 +253,7 @@ class MetonymParser(Parser):
         return [node]
 
   def string(self):
+    self.log('string')
     result = self.one_or_more(self.term)
     if result:
       node = Node('string')
@@ -221,6 +261,7 @@ class MetonymParser(Parser):
       return [node]
 
   def term(self):
+    self.log('term')
     m = self.match("[\w\-\_]+")
     if m:
       node = Node('term')
@@ -231,7 +272,9 @@ if __name__ == '__main__':
   import json
   from json import tool
   p = MetonymParser()
-  n = p.go('[hello i am a required string | i am something else] [synthesizer]')
-  print(p.tokens)
-  print(str(p.output))
-
+  s = '[Who | [What | which] [company | brand]]:make'\
+      '[created|built|designed|produced] the [JX-3P]:make'\
+      '(synthesizer|keyboard|synth)?'
+  n = p.go(s)
+  print(p.index)
+  print(p.tokens[p.index])
