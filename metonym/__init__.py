@@ -50,77 +50,64 @@ class Parser:
     return self.one_or_more(self.expression)
 
   # primitive functions
+  def execute(self, rule):
+    bt = self.index
+    self.depth += 1
+    result = rule()
+    self.depth -= 1 
+    if result:
+      return result
+    self.log('back-tracking index from {} to {}'.format(self.index, bt))
+    self.log('{} failed'.format(rule.__name__))
+    self.index = bt
+
   def first_of(self, rules):
     """
     Return the result of the first rule that returns a valid result
     """
     for rule in rules:
-      self.depth += 1
-      bt = self.index
-      self.log('first_of invoking {}'.format(rule.__name__))
-      result = rule()
-      self.depth -= 1
+      self.log('first_of -> {}'.format(rule.__name__))
+      result = self.execute(rule)
       if result:
-        self.log('first_of {} is valid'.format(rule.__name__))
         return result
-      else:
-        self.depth -= 1
-        self.index = bt
-        pass
 
   def one_or_more(self, rule):
     """
     Return the valid result of one or more rules
     """
     nodes = []
-    predicate = True
-    while predicate and self.index < len(self.tokens):
-      bt = self.index
-      self.depth += 1
-      self.log('one_or_more invoking {}'.format(rule.__name__))
-      node = rule()
-      self.depth -= 1
-      if node is None:
-        predicate = False
-        self.index = bt
-      else:
-        self.log('one_or_more {} is valid'.format(rule.__name__))
-        nodes.append(node)
-    if len(nodes):
-      return nodes
-
-  def zero_or_more(self, rule):
-    nodes = []
     keep_going = True
     while keep_going:
+      self.log('one_or_more -> {}'.format(rule.__name__))
+      bt = self.index
       self.depth += 1
-      self.log('zero_or_more invoking {}'.format(rule.__name__))
-      node = rule()
+      result = rule()
       self.depth -= 1
-      if node:
-        nodes.append(node)
-        self.index += 1
+      if result:
+        nodes.append(result)
       else:
+        self.index = bt
         keep_going = False
 
     if len(nodes):
       return nodes
 
-  def required(self, rule):
+  def require(self, rule):
     """
     Returns the result of a rule or throws if the result is None
     """
+    self.log('require -> {}'.format(rule.__name__))
     node = rule()
     if not node:
       raise Error('The rule {} was required, but failed to output a valid result', rule.__name__)  
     return node
 
-  # utility functions
   def match(self, pattern):
     """
     Returns the result of a regex match at a specific index, None otherwise
     """
     if self.index < len(self.tokens):
+      self.log('match -> {}'.format(pattern))
       m = re.match(pattern, self.tokens[self.index])
       if m:
         value = m.group(0)
@@ -133,6 +120,7 @@ class Parser:
     Return a boolean indicating whether or not the next character in the input matches the supplied parameter
     """
     if self.index < len(self.tokens):
+      self.log('next_char_is {}'.format(c))
       if self.tokens[self.index] == c:
         self.index += 1
         return True
@@ -144,10 +132,10 @@ class Parser:
     """
     return list(itertools.chain.from_iterable(l))
 
-  def  get_indent(self):
-    indentation = ''
-    for i in range(0, self.depth):
-      indentation += '|-'
+  def get_indent(self):
+    indentation = '|'
+    for i in range(0, self.depth-1):
+      indentation += '-|'
     return indentation
 
   def log(self, msg): 
@@ -158,23 +146,24 @@ class Parser:
         if self.logline >= 10 and self.logline < 100:
           logline_str = "0" + logline_str
         self.logline += 1
-        print('{}. {} {} :: {}'.format(logline_str, self.index, self.get_indent(), msg))
+        if self.index < len(self.tokens):
+          print('{}. {} {}  {} - Token: {}'.format(logline_str, self.index, self.get_indent(), msg, self.tokens[self.index]))
 
 class MetonymParser(Parser):
   def __init__(self):
     super(MetonymParser, self).__init__()
 
   def expression(self):
-    self.log('expression')
-    lh_optionals = self.zero_or_more(self.optional)
+    lh_optionals = self.one_or_more(self.optional)
     result = self.first_of([
+        self.option_list,
         self.requirement,
         self.string
       ])
 
     if result:
       entity = self.entity()
-      rl_optionals = self.zero_or_more(self.optional)
+      rl_optionals = self.one_or_more(self.optional)
       node = Node('expression')
       node.nodes = self.collapse([
           lh_optionals or [],
@@ -185,7 +174,6 @@ class MetonymParser(Parser):
       return [node]
 
   def requirement(self):
-    self.log('requirement')
     if self.next_char_is('['):
       result = self.first_of([
         self.option_list,
@@ -200,12 +188,12 @@ class MetonymParser(Parser):
           return [node]
 
   def optional(self):
-    self.log('optional')
     if self.next_char_is('('):
       result = self.first_of([
           self.option_list,
           self.string
         ])
+
       if result:
         if self.next_char_is(')'):
           node = Node('optional')
@@ -213,13 +201,11 @@ class MetonymParser(Parser):
           return [node]
 
   def option_list(self):
-    self.log('option_list')
     options = self.one_or_more(self.option) 
     if options:
-      last_option = self.first_of([
-          self.string,
-          self.requirement
-        ])
+      last_option = \
+        self.one_or_more(self.string) or \
+        self.one_or_more(self.requirement)
 
       if last_option:
         option = Node('option')
@@ -229,11 +215,9 @@ class MetonymParser(Parser):
         return [node]
 
   def option(self):
-    self.log('option')
-    lhs = self.first_of([
-        self.string,
-        self.requirement,
-      ])
+    lhs = \
+      self.one_or_more(self.string) or \
+      self.one_or_more(self.requirement)
 
     if lhs:
       pipe = self.next_char_is('|')
@@ -243,17 +227,15 @@ class MetonymParser(Parser):
         return [node]
 
   def entity(self):
-    self.log('entity')
     colon = self.next_char_is(':')
     if colon:
       term = self.term()
       if term:
         node = Node('entity')
-        node.value = term.value
+        node.value = term[0].value
         return [node]
 
   def string(self):
-    self.log('string')
     result = self.one_or_more(self.term)
     if result:
       node = Node('string')
@@ -261,7 +243,6 @@ class MetonymParser(Parser):
       return [node]
 
   def term(self):
-    self.log('term')
     m = self.match("[\w\-\_]+")
     if m:
       node = Node('term')
@@ -272,9 +253,16 @@ if __name__ == '__main__':
   import json
   from json import tool
   p = MetonymParser()
-  s = '[Who | [What | which] [company | brand]]:make'\
+  '''
+  s = '[Who | [[What | which] [company | brand]]]:make'\
       '[created|built|designed|produced] the [JX-3P]:make'\
       '(synthesizer|keyboard|synth)?'
+  '''
+  #s = 'adios | goodbye | seeya [been nice getting to know you]'
+  #s = '[123|[a b|c d]] [e f|c]] d e f (hello)'
+  #s = '[who|[what|which] ]'
+  s = '[Who | [What | Which] [company| maker]]:model [created|built|designed] the [JX3P]:make (synthesizer|keyboard|synth)'
   n = p.go(s)
-  print(p.index)
-  print(p.tokens[p.index])
+  print(s)
+  print(p.tokens)
+  print(p.output)
