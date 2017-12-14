@@ -1,0 +1,5 @@
+name: metonym
+channels:
+- conda-forge
+- defaults
+prefix: /Users/jeremy/Development/anaconda/envs/metonym
