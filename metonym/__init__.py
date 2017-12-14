@@ -175,12 +175,17 @@ class MetonymParser(Parser):
     super(MetonymParser, self).__init__()
 
   def pre(self, in_string):
+    """
+    Metonym doesn't require any pre-processing, but this is a good chance to do some simple validation
+    """
+    # check for balanced parens
     lp = in_string.count('(')
     rp = in_string.count(')')
     if lp != rp:
       raise Exception('Parenthesis mis-match: {} left paren(s), {} right paren(s). '
         'Input must contain an equal number of both'.format(lp, rp))
 
+    # check for balanced braces
     lb = in_string.count('[')
     rb = in_string.count(']')
     if lb != rb:
@@ -190,6 +195,9 @@ class MetonymParser(Parser):
     return in_string
 
   def lex(self, string):
+    """
+    Splits the string into words and terminal symbols
+    """
     return re.findall(r"[\w\_\-']+|[\|\[\]\(\):]", string)
 
   def expression(self):
