@@ -22,7 +22,7 @@ class Node:
 class Parser:
   """
   The base Parser class
-  Provides a few utility methods and a method to override (expression) in sub-classes
+  Provides a few utility methods and methods to override (expression) in sub-classes
   """
   def __init__(self):
     self.depth = 0
@@ -32,14 +32,33 @@ class Parser:
     self.output = None
     self.tokens = []
 
-  def go(self, input_string):
+  def pre(self, string):
     """
-    Invokes the creation of an abstract syntax tree through recursive decent parsing
+    Return the preprocessed string or throw if string is not valid
+    """
+    raise Exception('The method pre() must be overridden by the Parser sub-class')
+
+  def lex(self, string):
+    """
+    Return the tokenized string as a list of tokens
+    """
+    raise Exception('The method lex() must be overridden by Parser sub-class')
+
+  def expression(self):
+    """
+    Define the basic composition of an expression
+    """
+    raise Exception('The method expression() must be overidden by Parser sub-class')
+
+  def go(self, string):
+    """
+    Invoke the creation of an abstract syntax tree through recursive decent parsing
     """
     self.depth = 0
     self.index = 0
     self.logline = 0
-    self.tokens = re.findall(r"[\w\_\-']+|[\|\[\]\(\):]", input_string)
+    self.input = self.pre(string)
+    self.tokens = self.lex(self.input)
     self.output = Node('expression-list')
     tree = self.expression_list()
     if tree:
@@ -47,19 +66,10 @@ class Parser:
     return self.output
 
   def expression_list(self): 
+    """
+    Returns an AST consiting of one or more expressions child nodes
+    """
     return self.one_or_more(self.expression)
-
-  # primitive functions
-  def execute(self, rule):
-    bt = self.index
-    self.depth += 1
-    result = rule()
-    self.depth -= 1 
-    if result:
-      return result
-    self.log('back-tracking index from {} to {}'.format(self.index, bt))
-    self.log('{} failed'.format(rule.__name__))
-    self.index = bt
 
   def first_of(self, rules):
     """
@@ -67,9 +77,13 @@ class Parser:
     """
     for rule in rules:
       self.log('first_of -> {}'.format(rule.__name__))
-      result = self.execute(rule)
+      self.depth += 1
+      bt = self.index
+      result = rule()
+      self.depth -= 1
       if result:
         return result
+      self.index = bt
 
   def one_or_more(self, rule):
     """
@@ -133,25 +147,50 @@ class Parser:
     return list(itertools.chain.from_iterable(l))
 
   def get_indent(self):
+    """
+    Computes the indentation level for the current logline
+    """
     indentation = '|'
     for i in range(0, self.depth-1):
       indentation += '-|'
     return indentation
 
   def log(self, msg): 
+    """
+    Formats a string for logging and appends the supplied msg param
+    """
     if self.logging:
-        logline_str = str(self.logline);
-        if self.logline < 10:
-          logline_str = "00" + logline_str
-        if self.logline >= 10 and self.logline < 100:
-          logline_str = "0" + logline_str
-        self.logline += 1
-        if self.index < len(self.tokens):
-          print('{}. {} {}  {} - Token: {}'.format(logline_str, self.index, self.get_indent(), msg, self.tokens[self.index]))
+      logline_str = str(self.logline);
+      if self.logline < 10:
+        logline_str = "00" + logline_str
+      if self.logline >= 10 and self.logline < 100:
+        logline_str = "0" + logline_str
+      self.logline += 1
+      if self.index < len(self.tokens):
+        print('{}. {} {}  {} - Token: {}'
+          .format(logline_str, self.index, self.get_indent(), msg, self.tokens[self.index]))
 
 class MetonymParser(Parser):
   def __init__(self):
     super(MetonymParser, self).__init__()
+
+  def pre(self, in_string):
+    lp = in_string.count('(')
+    rp = in_string.count(')')
+    if lp != rp:
+      raise Exception('Parenthesis mis-match: {} left paren(s), {} right paren(s). '
+        'Input must contain an equal number of both'.format(lp, rp))
+
+    lb = in_string.count('[')
+    rb = in_string.count(']')
+    if lb != rb:
+      raise Exception('Brace mis-match: {} left brace(s), {} right brace(s). '
+        'Input must contain an equal number of both'.format(lb, rb))
+      
+    return in_string
+
+  def lex(self, string):
+    return re.findall(r"[\w\_\-']+|[\|\[\]\(\):]", string)
 
   def expression(self):
     lh_optionals = self.one_or_more(self.optional)
@@ -252,17 +291,12 @@ class MetonymParser(Parser):
 if __name__ == '__main__':
   import json
   from json import tool
-  p = MetonymParser()
-  '''
-  s = '[Who | [[What | which] [company | brand]]]:make'\
-      '[created|built|designed|produced] the [JX-3P]:make'\
-      '(synthesizer|keyboard|synth)?'
-  '''
-  #s = 'adios | goodbye | seeya [been nice getting to know you]'
-  #s = '[123|[a b|c d]] [e f|c]] d e f (hello)'
-  #s = '[who|[what|which] ]'
+  parser = MetonymParser()
+  parser.logging = False
   s = '[Who | [What | Which] [company| maker]]:model [created|built|designed] the [JX3P]:make (synthesizer|keyboard|synth)'
-  n = p.go(s)
-  print(s)
-  print(p.tokens)
-  print(p.output)
+  n = parser.go(s)
+
+  print(parser.output)
+  print('Metonym successfully parsed the input!' 
+    if parser.index == len(parser.tokens) 
+    else 'Error at index {}'.format(parser.index))
