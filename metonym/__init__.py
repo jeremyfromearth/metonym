@@ -292,8 +292,9 @@ if __name__ == '__main__':
   import json
   from json import tool
   parser = MetonymParser()
-  parser.logging = False
+  #parser.logging = False
   s = '[Who | [What | Which] [company| maker]]:model [created|built|designed] the [JX3P]:make (synthesizer|keyboard|synth)'
+  #s = '[Have you [walked|fed|petted] [Sonic|Walter] (today)]'
   n = parser.go(s)
 
   print(parser.output)
