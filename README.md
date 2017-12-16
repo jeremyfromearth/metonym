@@ -4,7 +4,7 @@ Domain specific language for generating analogous variations of textual inputs. 
 ### Grammar:
 ```
 expression-list = (expression), {expression};
-expression = [optional] (option-list | requirement | string) [entity] [optional];
+expression = (option-list | requirement | string) [entity] | [optional];
 requirement = '[' option-list | string | requirement ']';
 optional = '(' option-list | string ')';
 option-list = {option} (string | requirement);
