@@ -1,15 +1,17 @@
 import re
+import json
 import string
 import itertools
+from collections import Iterable
 
 class Node:
   """
-  A simple class containing a name and list of leaf nodes
+  A simple class containing a name and list of leaf children
   """
   def __init__(self, node_type):
-    self.type = node_type
+    self.name = node_type
     self.value = ''
-    self.nodes = []
+    self.children = []
 
   def __repr__(self):
     return str(vars(self))
@@ -27,7 +29,7 @@ class Parser:
   def __init__(self):
     self.depth = 0
     self.index = 0
-    self.logging = True
+    self.logging = False
     self.logline = 0
     self.output = None
     self.tokens = []
@@ -62,14 +64,14 @@ class Parser:
     self.output = Node('expression-list')
     tree = self.expression_list()
     if tree:
-      self.output.nodes = tree
+      self.output.children = tree
     return self.output
 
   def expression_list(self): 
     """
-    Returns an AST consiting of one or more expressions child nodes
+    Returns an AST consiting of one or more expressions child children
     """
-    return self.one_or_more(self.expression)
+    return self.collapse(self.one_or_more(self.expression))
 
   def first_of(self, rules):
     """
@@ -89,7 +91,7 @@ class Parser:
     """
     Return the valid result of one or more rules
     """
-    nodes = []
+    children = []
     keep_going = True
     while keep_going:
       self.log('one_or_more -> {}'.format(rule.__name__))
@@ -98,13 +100,13 @@ class Parser:
       result = rule()
       self.depth -= 1
       if result:
-        nodes.append(result)
+        children.append(result)
       else:
         self.index = bt
         keep_going = False
 
-    if len(nodes):
-      return nodes
+    if len(children):
+      return children
 
   def require(self, rule):
     """
@@ -144,7 +146,15 @@ class Parser:
     """
     Collapse a 2 dimensional list into a 1 dimensional list
     """
-    return list(itertools.chain.from_iterable(l))
+    result = []
+    for item in l:
+      if type(item) == type([]):
+        for x in item:
+          result.append(x)
+      else:
+        result.append(item)
+    return result
+    #return list(itertools.chain.from_iterable(l))
 
   def get_indent(self):
     """
@@ -201,22 +211,19 @@ class MetonymParser(Parser):
     return re.findall(r"[\w\_\-']+|[\|\[\]\(\):]", string)
 
   def expression(self):
-    lh_optionals = self.one_or_more(self.optional)
     result = self.first_of([
         self.option_list,
         self.requirement,
-        self.string
+        self.string,
+        self.optional
       ])
 
     if result:
       entity = self.entity()
-      rl_optionals = self.one_or_more(self.optional)
       node = Node('expression')
-      node.nodes = self.collapse([
-          lh_optionals or [],
-          [result], 
+      node.children = self.collapse([
+          result, 
           entity or [],
-          rl_optionals or []
         ])
       return [node]
 
@@ -231,7 +238,7 @@ class MetonymParser(Parser):
       if result:
         if self.next_char_is(']'):
           node = Node('requirement')
-          node.nodes = result
+          node.children = self.collapse(result)
           return [node]
 
   def optional(self):
@@ -244,7 +251,7 @@ class MetonymParser(Parser):
       if result:
         if self.next_char_is(')'):
           node = Node('optional')
-          node.nodes = result
+          node.children = self.collapse(result)
           return [node]
 
   def option_list(self):
@@ -255,10 +262,12 @@ class MetonymParser(Parser):
         self.one_or_more(self.requirement)
 
       if last_option:
-        option = Node('option')
-        option.nodes = [last_option]
+        last = Node('option')
+        last.children = self.collapse(last_option)
+        options.append(last)
+
         node = Node('option-list')
-        node.nodes = self.collapse([options, [option]])
+        node.children = self.collapse(options)
         return [node]
 
   def option(self):
@@ -270,7 +279,7 @@ class MetonymParser(Parser):
       pipe = self.next_char_is('|')
       if pipe:
         node = Node('option')
-        node.nodes = lhs
+        node.children = self.collapse(lhs)
         return [node]
 
   def entity(self):
@@ -286,7 +295,7 @@ class MetonymParser(Parser):
     result = self.one_or_more(self.term)
     if result:
       node = Node('string')
-      node.nodes = result
+      node.children = self.collapse(result)
       return [node]
 
   def term(self):
