@@ -14,12 +14,10 @@ class Node:
     self.children = []
 
   def __repr__(self):
-    return str(vars(self))
+    return json.dumps(self.__dict__, default=lambda o: o.__dict__)
 
   def __str__(self):
-    s = self.__repr__().replace("'", '"')
-    j = json.loads(s)
-    return json.dumps(j, indent=1, sort_keys=True)
+    return self.__repr__()
 
 class Parser:
   """
@@ -208,7 +206,9 @@ class MetonymParser(Parser):
     """
     Splits the string into words and terminal symbols
     """
-    return re.findall(r"[\w\_\-']+|[\|\[\]\(\):]", string)
+    tokens = re.findall(r"[\w\_\-']+|[\|\[\]\(\):]", string)
+    print(tokens)
+    return tokens 
 
   def expression(self):
     result = self.first_of([
@@ -299,7 +299,7 @@ class MetonymParser(Parser):
       return [node]
 
   def term(self):
-    m = self.match("[\w\-\_]+")
+    m = self.match("[\w\-\_']+")
     if m:
       node = Node('term')
       node.value = m

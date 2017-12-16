@@ -1,5 +1,5 @@
 # metonym
-Domain specific language for generating analogous variations of textual inputs. The goal of this project is to more readily generate variations of text with entity annotations for use in systems such as Rasa NLU. 
+Domain specific language for generating analogous variations of textual inputs. The goal of this project is to more readily generate variations of text with entity annotations for use in systems such as Rasa NLU.
 
 ### Grammar:
 ```
@@ -56,14 +56,14 @@ Expression List:
       make
     Requirement:
       Option List
-        Option: 
+        Option:
           who
         Option:
           Requirement:
             Option List
-              Option: 
+              Option:
                 what
-              Option: 
+              Option:
                 which
           Requirement:
             Option: company
@@ -114,9 +114,9 @@ Note that currently, the "intent" is not part of the syntax as it would be the s
       "value": "Which brand",
       "entity": "make"
     }, {
-       "start": 24, 
+       "start": 24,
        "end": 41,
-       "value": "JX3P synthesizer", 
+       "value": "JX3P synthesizer",
        "entity": "make"
     }
   ]
