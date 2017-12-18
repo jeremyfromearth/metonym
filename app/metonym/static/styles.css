@@ -69,6 +69,33 @@ html, body {
   position: absolute;
 }
 
+.content-tab {
+  padding: 0em 0em 0em 1em;
+}
+
+.menu-container {
+  
+  float: right;
+}
+
+.menu-container ul {
+  margin: 0;
+  padding: 1em;
+  display: inline-block;
+}
+
+.menu-container li {
+  float: left;
+  margin-right: 1em;
+  list-style: none;
+  color: #ccc;
+}
+
+.menu-container li:hover {
+  color: rgb(66, 184, 221);
+  cursor: hand;
+}
+
 .footer {
   background-color: #222;
 }
@@ -93,8 +120,9 @@ html, body {
   float: right;
 }
 
-h1 {
+.titlebar h1 {
   margin: 0;
+  float: left;
 }
 
 input:checked + .slider {

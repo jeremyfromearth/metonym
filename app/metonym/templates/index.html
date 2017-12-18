@@ -11,9 +11,25 @@
     <div class='container'>
       <div class='titlebar'>
         <h1>Metonym</h1>
-      </div>
+        <div class='menu-container'>
+            <ul id='menu'>
+              <li class='menu-li' data-tab='overview-tab'>Overview</li>
+              <li class='menu-li' data-tab='output-tab'>Output</li>
+              <li class='menu-li' data-tab='tree-view-tab'>Tree</li>
+              <li class='menu-li' data-tab='raw-tab'>Raw</li>
+            </ul>
+          </div>
+        </div>
       <div id='content' class='content'>
-        <svg id='svg'></svg>
+        <div id='overview-tab' class='content-tab'>
+          <h2>Welcome to Metonym</h2>
+          <p>This tool is intended to aid in the creation of creating variations of textual inputs</p> 
+        </div>
+        <div id='output-tab' class='content-tab'></div>
+        <div id='tree-view-tab' class='content-tab'>
+          <svg id='svg'></svg>
+        </div>
+        <div id='raw-tab' class='content-tab'></div>
       </div>
       <div class='footer'>
         <form class='pure-form'>

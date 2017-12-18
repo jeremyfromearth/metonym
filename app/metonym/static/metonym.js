@@ -33,6 +33,32 @@ function go() {
       tree.set_size(content.clientWidth, content.clientHeight)
     }
   });
+
+  d3.selectAll('.menu-li')
+    .on('mousedown', function(evt) {
+      show_tab(this.dataset.tab);
+      var selected = this;
+      
+    });
+
+  function show_tab(id) {
+    var tabs = document.getElementsByClassName('content-tab');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].style.display = "none"; 
+    }
+    var tab = el(id);
+    if(tab) tab.style.display = "block"; 
+
+    d3.selectAll('.menu-li').each(function(li) {
+      if(this.dataset.tab == id) {
+        this.style.color = 'rgb(66, 184, 221)'
+      } else {
+        this.style.color = '#ccc';
+      }
+    });
+  }
+
+  show_tab('overview-tab');
 }
 
 window.addEventListener('load', go);
