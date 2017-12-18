@@ -1,46 +1,34 @@
-function el(id) {
-  return document.getElementById(id);
-}
-
 function go() {
+  // -------------------------------------------------------------
+  //
+  // Example Data
+  //
+  // -------------------------------------------------------------
+  var examples = [{
+      name: 'Greetings Option List',
+      text: '[Hello|Hi|Hey there|Hola|Hiya]:greeting'
+    }, {
+      name: 'Multiple Entities',
+      text: 'What [town|city|state|province|country]:location_type did you learn to ride a [bike|skateboard|segway]:vehicle in?'
+    }
+  ];
+
+  // -------------------------------------------------------------
+  //
+  // U.I.
+  //
+  // -------------------------------------------------------------
   var content = el('content');
   var input = el('metonym-input');
   var parse_btn = el('parse-btn');
+  var example_select = el('example-select');
   var tree = TreeVisualization(content.clientWidth, content.clientHeight, '#svg')
 
-  input.value = '[Who | [What | which] [company | brand]]:make '+
-    '[created|built|designed|produced] the [JX-3P]:model (synthesizer|keyboard|synth)'
-
-  parse_btn.addEventListener('click', function() {
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', './parse', true);
-    xhr.setRequestHeader("Content-type", "text");
-    xhr.onload = function () {
-      if(xhr.status == 200) {
-        var result = JSON.parse(xhr.response);
-        tree.create(result);
-      } else {
-        console.log('error');
-      }
-    };
-
-    var data = input.value;
-    xhr.send(input.value);
-  });
-
-  window.addEventListener('resize', function(event) {
-    if(tree) {
-      tree.set_size(content.clientWidth, content.clientHeight)
-    }
-  });
-
-  d3.selectAll('.menu-li')
-    .on('mousedown', function(evt) {
-      show_tab(this.dataset.tab);
-      var selected = this;
-      
-    });
-
+  // -------------------------------------------------------------
+  //
+  // U.I. Update Methods
+  //
+  // -------------------------------------------------------------
   function show_tab(id) {
     var tabs = document.getElementsByClassName('content-tab');
     for (var i = 0; i < tabs.length; i++) {
@@ -58,6 +46,55 @@ function go() {
     });
   }
 
+  // -------------------------------------------------------------
+  //
+  // U.I. Event Handlers
+  //
+  // -------------------------------------------------------------
+  parse_btn.addEventListener('click', parse_input);
+
+  window.addEventListener('resize', function(event) {
+    if(tree) {
+      tree.set_size(content.clientWidth, content.clientHeight)
+    }
+  });
+
+  d3.selectAll('.menu-li')
+    .on('mousedown', function(evt) {
+      show_tab(this.dataset.tab);
+    });
+
+  // -------------------------------------------------------------
+  //
+  // Utils
+  //
+  // -------------------------------------------------------------
+  function el(id) {
+    return document.getElementById(id);
+  }
+
+  function parse_input() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', './parse', true);
+    xhr.setRequestHeader("Content-type", "text");
+    xhr.onload = function () {
+      if(xhr.status == 200) {
+        var result = JSON.parse(xhr.response);
+        tree.create(result);
+      } else {
+        console.log('error');
+      }
+    };
+
+    var data = input.value;
+    xhr.send(input.value);
+  }
+
+  // -------------------------------------------------------------
+  //
+  // Initialize
+  //
+  // -------------------------------------------------------------
   show_tab('overview-tab');
 }
 
