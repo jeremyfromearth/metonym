@@ -1,36 +1,27 @@
 <html>
   <head>
+    <link rel='stylesheet' href='./static/pure-min.css'/> 
+    <link rel='stylesheet' href='./static/styles.css'/>
     <script type='text/javascript' src='./static/d3.js'></script>
     <script type='text/javascript' src='./static/d3.layout.js'></script>
+    <script type='text/javascript' src='./static/treevis.js'></script>
     <script type='text/javascript' src='./static/metonym.js'></script>
   </head>
-  <style type='text/css'>
-    body {
-      font-family: monospace;
-    }
-
-    .node circle {
-      cursor: pointer;
-      fill: #fff;
-      stroke: steelblue;
-      stroke-width: 1.5px;
-    }
-
-    .node text {
-      font-size: 11px;
-    }
-
-    path.link {
-      fill: none;
-      stroke: #ccc;
-      stroke-width: 1.5px;
-    }
-  </style>
   <body>
-    <h1>Metonym</h1>
-    <textarea id='metonym-input'>[Who | [What | which] [company | brand]]:make [created|built|designed|produced] the [JX-3P]:model (synthesizer|keyboard|synth)?</textarea>
-    <button id='parse-btn'>Parse</button>
-    <div id='body'></div>
-    <svg id='svg'></svg>
+    <div class='container'>
+      <div class='titlebar'>
+        <h1>Metonym</h1>
+      </div>
+      <div id='content' class='content'>
+        <svg id='svg'></svg>
+      </div>
+      <div class='footer'>
+        <form class='pure-form'>
+          <select id='input-select' class='input-select' type='select'></select>
+          <input id='metonym-input' class='' type='text'></input>
+          <input id='parse-btn' class='button-secondary  pure-button' type='button' value='Parse'></input>
+        </form>
+      </div>
+    </div>
   </body>
 </html>

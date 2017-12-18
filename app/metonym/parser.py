@@ -152,7 +152,6 @@ class Parser:
       else:
         result.append(item)
     return result
-    #return list(itertools.chain.from_iterable(l))
 
   def get_indent(self):
     """
@@ -168,6 +167,8 @@ class Parser:
     Formats a string for logging and appends the supplied msg param
     """
     if self.logging:
+      # TODO: Update this logging code to handle n log lines
+      # this assumes that we'll have fewer than 1000 lines
       logline_str = str(self.logline);
       if self.logline < 10:
         logline_str = "00" + logline_str
