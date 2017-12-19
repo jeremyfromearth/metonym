@@ -1,4 +1,6 @@
 import json
+import requests
+import markdown
 from flask import Flask, render_template, request
 from metonym.parser import MetonymParser
 
@@ -11,5 +13,11 @@ def index():
 
 @app.route('/parse', methods=['POST'])
 def parse():
-  ast = parser.go(request.get_data(as_text=True))
-  return str(ast)
+  ast = None
+  try:
+    parser.go(request.get_data(as_text=True))
+  except Exception as e:
+    return json.dumps({
+          'error': str(e)
+        })
+  return str(parser.output)

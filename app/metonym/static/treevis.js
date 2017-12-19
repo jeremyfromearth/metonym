@@ -14,6 +14,10 @@ function TreeVisualization(width, height, svg_id) {
     }
   }
 
+  function clear() {
+    svg.selectAll('*').remove();
+  }
+
   function create(root) {
     var i = 0;
     var tree = d3.layout.tree().size([h, w]);
@@ -23,7 +27,7 @@ function TreeVisualization(width, height, svg_id) {
     root.x0 = h / 2;
     root.y0 = 0;
 
-    svg.selectAll('*').remove();
+    clear(); 
     update(root);
 
     function update(source) {
@@ -133,8 +137,11 @@ function TreeVisualization(width, height, svg_id) {
   }
 
   return {
+    clear: clear,
     create: create,
-    set_size: function(w, h) {
+    set_size: function(width, height) {
+      w = width;
+      h = height;
       svg.attr('width', w)
          .attr('height', h);
     }

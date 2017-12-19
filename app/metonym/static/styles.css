@@ -14,15 +14,26 @@ html, body {
   background: rgb(66, 184, 221);
 }
 
+code {
+  font-size: 0.8em;
+  padding: 0em;
+  background-color: #DDD;
+  display: inline-block;
+  padding: 2em;
+  border-radius: 0.5em;
+}
+
 .container {
   width: 100%;
   height: 100%;
   display: flex;  
   flex-flow: column; 
+  align-items: stretch;
+  justify-content: space-between;
 }
 
 .content {
-  flex: 1 0 auto;
+  flex: 1 1 auto;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -35,11 +46,17 @@ html, body {
 }
 
 .content-tab {
-  flex: 1 0 auto;
+  flex: 1 1 auto;
   display: flex;
-  justify-content: stretch;
-  flex-direction: row;
-  align-items: stretch;
+}
+
+.error-bar {
+  width: 100%;
+  height: 15px;
+  background-color: #ffa3b7;
+  padding: 1em;
+  color: #ff0037;
+  display: none;
 }
 
 .footer {
@@ -89,6 +106,8 @@ html, body {
 
 .overview-content {
   margin: 1em;
+  flex: 1 1 auto;
+  overflow-y: scroll;
 }
 
 .raw-details, .raw-result {
@@ -98,10 +117,10 @@ html, body {
   padding: 1em;
   border: 1px dashed #999;
   border-radius: 0.5em;
+  overflow-y: scroll;
 }
 
 .raw-result {
-  overflow-y: scroll;
   resize:none;
 }
 

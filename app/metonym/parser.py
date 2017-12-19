@@ -208,7 +208,6 @@ class MetonymParser(Parser):
     Splits the string into words and terminal symbols
     """
     tokens = re.findall(r"[\w\_\-']+|[\|\[\]\(\):]", string)
-    print(tokens)
     return tokens 
 
   def expression(self):
@@ -313,7 +312,6 @@ if __name__ == '__main__':
   s = '[Who | [What | Which] [company| maker]]:model [created|built|designed] the [JX3P]:make (synthesizer|keyboard|synth)'
   n = parser.go(s)
 
-  print(parser.output)
   print('Metonym successfully parsed the input!' 
     if parser.index == len(parser.tokens) 
     else 'Error at index {}'.format(parser.index))

@@ -12,19 +12,19 @@
       <div class='titlebar'>
         <h1>Metonym</h1>
         <div class='menu-container'>
-            <ul id='menu'>
-              <li class='menu-li' data-tab='overview-tab'>Overview</li>
-              <li class='menu-li' data-tab='output-tab'>Output</li>
-              <li class='menu-li' data-tab='tree-view-tab'>Tree</li>
-              <li class='menu-li' data-tab='raw-tab'>Raw</li>
-            </ul>
-          </div>
+          <ul id='menu'>
+            <li class='menu-li' data-tab='overview-tab'>Overview</li>
+            <li class='menu-li' data-tab='output-tab'>Output</li>
+            <li class='menu-li' data-tab='tree-view-tab'>Tree</li>
+            <li class='menu-li' data-tab='raw-tab'>Raw</li>
+          </ul>
         </div>
+      </div>
       <div id='content' class='content'>
         <div id='overview-tab' class='content-tab'>
-          <div class='overview-content'>
-            <h2>Welcome to Metonym</h2>
-            <p>This tool is intended to aid in the generation of variations of textual inputs for NLP related tasks</p> 
+          <div id='overview-text' class='overview-content'>
+            <div>
+            </div>
           </div>
         </div>
         <div id='output-tab' class='content-tab'></div>
@@ -33,9 +33,11 @@
         </div>
         <div id='raw-tab' class='content-tab'>
           <textarea id='raw-result' class='raw-result'></textarea>
-          <div id='raw-details' class='raw-details'></div>
+          <div id='raw-details' class='raw-details'>
+          </div>
         </div>
       </div>
+      <div id='error-bar' class='error-bar'></div>
       <div class='footer'>
         <form class='pure-form'>
           <select id='example-select' class='input-select' type='select'></select>

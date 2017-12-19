@@ -17,6 +17,8 @@ function go() {
   // -------------------------------------------------------------
   var content = el('content');
   var input = el('metonym-input');
+  var error_bar = el('error-bar');
+  var overview_txt = el('overview-text');
   var parse_btn = el('parse-btn');
   var raw_content = el('raw-result');
   var example_select = el('example-select');
@@ -73,6 +75,10 @@ function go() {
     update_input();
   });
 
+  input.addEventListener('keyup', function() {
+    error_bar.style.display = 'none';
+  });
+
   // -------------------------------------------------------------
   //
   // Utils
@@ -87,20 +93,28 @@ function go() {
   }
 
   function parse_input() {
+    tree.clear();
+    raw_content.value = '';
     var xhr = new XMLHttpRequest();
     xhr.open('POST', './parse', true);
     xhr.setRequestHeader("Content-type", "text");
     xhr.onload = function () {
       if(xhr.status == 200) {
         var result = JSON.parse(xhr.response);
-        tree.create(Object.assign({}, result));
-        raw_content.value = JSON.stringify(JSON.parse(xhr.response), null, 2);
+        if(result.error) {
+          error_bar.style.display = 'block';
+          error_bar.innerHTML = result.error;
+        } else {
+          show_tab('tree-view-tab');
+          tree.create(Object.assign({}, result));
+          raw_content.value = JSON.stringify(JSON.parse(xhr.response), null, 2);
+        }
       } else {
-        console.log('error');
+        error_bar.style.display = 'block';
+        error_bar.innerHTML = 'Server returned something other than a 200!';
       }
     };
 
-    var data = input.value;
     xhr.send(input.value);
   }
 
