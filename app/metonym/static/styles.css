@@ -38,29 +38,8 @@ html, body {
   flex: 1 0 auto;
   display: flex;
   justify-content: stretch;
-  flex-direction: column;
+  flex-direction: row;
   align-items: stretch;
-}
-
-.menu-container {
-  float: right;
-}
-
-.menu-container ul {
-  margin: 0;
-  padding: 0;
-}
-
-.menu-container li {
-  float: left;
-  list-style: none;
-  color: #ccc;
-  margin-left: 1em;
-}
-
-.menu-container li:hover {
-  color: rgb(66, 184, 221);
-  cursor: hand;
 }
 
 .footer {
@@ -87,10 +66,43 @@ html, body {
   float: right;
 }
 
+.menu-container {
+  float: right;
+}
+
+.menu-container ul {
+  margin: 0;
+  padding: 0;
+}
+
+.menu-container li {
+  float: left;
+  list-style: none;
+  color: #ccc;
+  margin-left: 1em;
+}
+
+.menu-container li:hover {
+  color: rgb(66, 184, 221);
+  cursor: hand;
+}
+
+.overview-content {
+  margin: 1em;
+}
+
+.raw-details, .raw-result {
+  flex: 1 0 auto;
+  width: 45%;
+  margin: 1em;
+  padding: 1em;
+  border: 1px dashed #999;
+  border-radius: 0.5em;
+}
+
 .raw-result {
   overflow-y: scroll;
-  flex: 1 0 auto;
-  padding: 1em;
+  resize:none;
 }
 
 .titlebar {

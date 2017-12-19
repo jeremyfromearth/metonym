@@ -5,7 +5,7 @@ function go() {
   //
   // -------------------------------------------------------------
   var examples = {
-    'Directions': '[Where can I find|How do I get to|Where is] [the|a|the nearset] [market]:location?',
+    'Directions': '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] [market]:location?',
     'Greetings Option List': '[Hello|Hi|Hey there|Hola|Hiya]:greeting',
     'Multiple Entities': 'What [town|city|state|province|country]:location_type did you learn to ride a [bike|skateboard|segway]:vehicle in?'
   };
