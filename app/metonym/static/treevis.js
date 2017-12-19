@@ -9,7 +9,6 @@ function TreeVisualization(width, height, svg_id) {
 
   function toggleAll(d) {
     if (d.children && d.children.length > 0) {
-      console.log(d.children);
       d.children.forEach(toggleAll);
       toggle(d);
     }
@@ -24,6 +23,7 @@ function TreeVisualization(width, height, svg_id) {
     root.x0 = h / 2;
     root.y0 = 0;
 
+    svg.selectAll('*').remove();
     update(root);
 
     function update(source) {

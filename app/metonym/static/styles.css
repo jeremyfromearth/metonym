@@ -4,54 +4,14 @@ html, body {
   font-family: monospace;
 }
 
-.button-success,
-.button-error,
-.button-warning,
-.button-secondary {
+.button-primary {
   color: white;
   border-radius: 0.25em;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
-.button-success {
-  background: rgb(28, 184, 65); /* this is a green */
-}
-
-.button-error {
-  background: rgb(202, 60, 60); /* this is a maroon */
-}
-
-.button-warning {
-  background: rgb(223, 117, 20); /* this is an orange */
-}
-
-.button-secondary {
-  background: rgb(66, 184, 221); /* this is a light blue */
-}
-
-.console {
-  width: 95%;
-  height: 90%;
-  background-color: #ccc;
-  overflow: scroll;
-  margin-bottom: 1em;
-  padding: 1em;
-  font-size: 0.9em;
-  letter-spacing: 0.05em;
-  line-height: 1.05em;
-}
-
-.console-container {
-  width: 100%;
-  height: 80%;
-  margin: 1em 0em 0em 0em;
-  overflow: hidden;
-}
-
-.console-outer {
-  width: 50%;
-  display: inline-flex;
-  overflow: hidden;
+.button-primary {
+  background: rgb(66, 184, 221);
 }
 
 .container {
@@ -63,6 +23,11 @@ html, body {
 
 .content {
   flex: 1 0 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
 }
 
 .content svg {
@@ -70,25 +35,27 @@ html, body {
 }
 
 .content-tab {
-  padding: 0em 0em 0em 1em;
+  flex: 1 0 auto;
+  display: flex;
+  justify-content: stretch;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .menu-container {
-  
   float: right;
 }
 
 .menu-container ul {
   margin: 0;
-  padding: 1em;
-  display: inline-block;
+  padding: 0;
 }
 
 .menu-container li {
   float: left;
-  margin-right: 1em;
   list-style: none;
   color: #ccc;
+  margin-left: 1em;
 }
 
 .menu-container li:hover {
@@ -120,103 +87,25 @@ html, body {
   float: right;
 }
 
-.titlebar h1 {
-  margin: 0;
-  float: left;
-}
-
-input:checked + .slider {
-  background-color: #2196F3;
-}
-
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
-}
-
-input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-.metonyn-input-form {
-  margin: 0;
-}
-
-.options {
-  width: 45%;
-  float: left;
-  margin-right: 1em;
-}
-
-.option-container {
+.raw-result {
+  overflow-y: scroll;
+  flex: 1 0 auto;
   padding: 1em;
-  margin: 1em 0 1em 0;
-  border: 1px solid #ccc;
-  border-radius: 0.25em;
-  overflow: auto;
-}
-
-.option-label {
-  font-weight: 600;
-  margin-bottom: 0.5em;
-}
-
-.option-label-inline {
-  float: left;
-  font-weight: 600;
-  margin-bottom: 0.5em;
-}
-
-pre {
-  font-size: 0.9em;
-  letter-spacing: 0.05em;
-  line-height: 1.05em;
-  overflow: visible;
-}
-
-/* https://www.w3schools.com/howto/howto_css_switch.asp */
-/* The switch - the box around the slider */
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-}
-
-/* Hide default HTML checkbox */
-.switch input {display:none;}
-
-/* The slider */
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
-  transition: .4s;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  -webkit-transition: .4s;
-  transition: .4s;
 }
 
 .titlebar {
-  margin-top: 0; 
   color: white; 
-  padding: 1em; 
   background-color: #222;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0.5em 1em 0.5em 1em; 
+}
+
+.titlebar h1 {
+  margin: 0;
+  float: left;
 }
 
 .tool-container {
