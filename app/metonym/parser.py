@@ -325,56 +325,98 @@ class MetonymCompiler:
       yield result
   '''
 
-  def go(self, expr_list): 
+  def go(self, ast): 
     print('--------------- go() ---------------')
     def _string(s):
       result = ''
       for term in s.children:
         result += term.value + ' '
-        result.strip()
-      return result
+      yield result
 
-    def _option(o):
-      for child in o.children:
-        if o.name == 'string':
-          yield _string(child)
+    def _option(option):
+      for child in option.children:
+        if child.name == 'string':
+          for r in _string(child):
+            yield r
         else:
-          for x in _expr(child):
-            yield x
+          for r in _expr(child):
+            yield r
 
     def _option_list(ol):
       for op in ol.children:
-        for x in _option(op):
-          yield x 
+        for r in _option(op):
+          yield r
 
-    def _expr(expr):
+    def _parse(expr, out=''):
       for child in expr.children:
         if child.name == 'expression':
-          result = []
-          for sub in child.children:
-            for x in _expr(child):
-              result.append(x)
-          yield result
+          exp = []
+          for r in _parse(child):
+            exp.append(r)
+          yield exp
         elif child.name == 'string':
-          return _string(child)
+          for r in _string(child):
+            yield r
         elif child.name == 'option-list':
-          for x in _option_list(child):
-            yield x
+          for r in _option_list(child):
+            yield r
         else:
-          for x in _expr(child):
-            yield _expr(child)
+          for r in _parse(child):
+            yield r
 
-    for x in _expr(expr_list):
-      yield x
+    def _parse2(tree):
+      def _parse(tree, idx):
+        if idx < len(tree):
+          branch = tree[idx]
+          for leaf in branch:
+            for el in _parse(tree, idx+1):
+              yield leaf + ' ' + el
+            if idx + 1 == len(tree):
+              yield leaf
+      for result in _parse(tree, 0):
+        yield result
+
+    expressions = [x for x in _parse(ast)] 
+    result = [x for x in _parse2(expressions)]
+    return result
+
+    '''
+    def _requirement(node, out=''):
+      yield node.children
+
+    def _expression(node, out=''):
+      for child in node.children:
+        yield out + child.name
+
+    for child in ast.children:
+      for x in _expression(child):
+        yield x
+
+    import random
+    def a():
+      for i in range(0, random.randint(1, 4)):
+        yield 'a'
+
+    def b():
+      for i in range(0, random.randint(1, 4)):
+        yield 'b'
+
+    s = 'abba'
+    for x in s:
+      if x == 'a':
+        for y in a():
+          yield y
+      if x == 'b':
+        for y in b():
+          yield y
+    '''
     
 if __name__ == '__main__':
   import json
   from json import tool
   parser = MetonymParser()
-  #s = 'Hello [Who | [What | Which] [company| maker | modern manufacture]]:make [created|built|designed] the [JX3P]:model (synthesizer|keyboard|synth)?'
-  s = 'a|b|c|d'
+  s = 'What [town|city|state|province|country]:location_type did you learn to ride a [bike|skateboard|segway]:vehicle in?'
   n = parser.go(s)
-  print(n)
   if parser.index == len(parser.tokens):
     compiler = MetonymCompiler()
     results = compiler.go(parser.output)
