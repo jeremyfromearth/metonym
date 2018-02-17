@@ -215,7 +215,7 @@ class MetonymParser(Parser):
         self.option_list,
         self.requirement,
         self.string,
-        self.optional
+        self.optional,
       ])
 
     if result:
@@ -244,6 +244,7 @@ class MetonymParser(Parser):
   def optional(self):
     if self.next_char_is('('):
       result = self.first_of([
+          self.expression,
           self.option_list,
           self.string
         ])
@@ -305,13 +306,96 @@ class MetonymParser(Parser):
       node.value = m
       return [node]
 
+class MetonymCompiler:
+  def __init__(self):
+    #self.root = root
+    pass
+
+  '''
+  def parse_option_list(self, node):
+    def _parse(node, idx):
+      if idx < len(node):
+        child = node.children[idx]
+        for ch1 in child.children:
+          for ch2 in _parse(node.children, idx+1):
+            yield ch1 + ' ' + ch2
+          if idx + 1 == len(node.children):
+            yield ch1 
+    for result in _parse(node, 0):
+      yield result
+  '''
+
+  def go(self, expr_list): 
+    print('--------------- go() ---------------')
+    def _string(s):
+      result = ''
+      for term in s.children:
+        result += term.value + ' '
+        result.strip()
+      return result
+
+    def _option(o):
+      for child in o.children:
+        if o.name == 'string':
+          yield _string(child)
+        else:
+          for x in _expr(child):
+            yield x
+
+    def _option_list(ol):
+      for op in ol.children:
+        for x in _option(op):
+          yield x 
+
+    def _expr(expr):
+      for child in expr.children:
+        if child.name == 'expression':
+          result = []
+          for sub in child.children:
+            for x in _expr(child):
+              result.append(x)
+          yield result
+        elif child.name == 'string':
+          return _string(child)
+        elif child.name == 'option-list':
+          for x in _option_list(child):
+            yield x
+        else:
+          for x in _expr(child):
+            yield _expr(child)
+
+    for x in _expr(expr_list):
+      yield x
+    
 if __name__ == '__main__':
   import json
   from json import tool
   parser = MetonymParser()
-  s = '[Who | [What | Which] [company| maker]]:model [created|built|designed] the [JX3P]:make (synthesizer|keyboard|synth)'
+  #s = 'Hello [Who | [What | Which] [company| maker | modern manufacture]]:make [created|built|designed] the [JX3P]:model (synthesizer|keyboard|synth)?'
+  s = 'a|b|c|d'
   n = parser.go(s)
-
-  print('Metonym successfully parsed the input!' 
-    if parser.index == len(parser.tokens) 
-    else 'Error at index {}'.format(parser.index))
+  print(n)
+  if parser.index == len(parser.tokens):
+    compiler = MetonymCompiler()
+    results = compiler.go(parser.output)
+    for x in results:
+      print(x)
+  else:
+    print('Parser Error at index {}'.format(parser.index))
+  """
+  results = [{
+      text: 'Who created the JX3P?,
+      entities: [{
+          value: Who,
+          start: 0, 
+          end: 4,
+          entity: make
+        }, {
+          value: JX3P,
+          start: 16, 
+          end: 19,
+          entity: model
+        }
+      ]
+    }]
+  """
