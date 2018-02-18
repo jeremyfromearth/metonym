@@ -306,138 +306,47 @@ class MetonymParser(Parser):
       node.value = m
       return [node]
 
+import itertools
 class MetonymCompiler:
-  def __init__(self):
-    #self.root = root
-    pass
-
-  '''
-  def parse_option_list(self, node):
-    def _parse(node, idx):
-      if idx < len(node):
-        child = node.children[idx]
-        for ch1 in child.children:
-          for ch2 in _parse(node.children, idx+1):
-            yield ch1 + ' ' + ch2
-          if idx + 1 == len(node.children):
-            yield ch1 
-    for result in _parse(node, 0):
-      yield result
-  '''
-
   def go(self, ast): 
     print('--------------- go() ---------------')
-    def _string(s):
-      result = ''
-      for term in s.children:
-        result += term.value + ' '
+    def _parse(node, cache=None):
+      if node.name == 'string':
+        value = ' '.join([n.value for n in node.children])
+        if cache is not None:
+          for c in cache:
+            yield c + ' ' + value
+        else:
+          yield value
+      if node.name == 'expression-list':
+        i = 0
+        current = None
+        total = len(node.children)
+        for child in node.children:
+          i += 1
+          current = list(_parse(child, current))
+          if i == total:
+            for result in current:
+              yield result
+      else:
+        for child in node.children:
+          for result in _parse(child, cache):
+            yield result
+
+    for result in _parse(ast, None):
       yield result
 
-    def _option(option):
-      for child in option.children:
-        if child.name == 'string':
-          for r in _string(child):
-            yield r
-        else:
-          for r in _expr(child):
-            yield r
-
-    def _option_list(ol):
-      for op in ol.children:
-        for r in _option(op):
-          yield r
-
-    def _parse(expr, out=''):
-      for child in expr.children:
-        if child.name == 'expression':
-          exp = []
-          for r in _parse(child):
-            exp.append(r)
-          yield exp
-        elif child.name == 'string':
-          for r in _string(child):
-            yield r
-        elif child.name == 'option-list':
-          for r in _option_list(child):
-            yield r
-        else:
-          for r in _parse(child):
-            yield r
-
-    def _parse2(tree):
-      def _parse(tree, idx):
-        if idx < len(tree):
-          branch = tree[idx]
-          for leaf in branch:
-            for el in _parse(tree, idx+1):
-              yield leaf + ' ' + el
-            if idx + 1 == len(tree):
-              yield leaf
-      for result in _parse(tree, 0):
-        yield result
-
-    expressions = [x for x in _parse(ast)] 
-    result = [x for x in _parse2(expressions)]
-    return result
-
-    '''
-    def _requirement(node, out=''):
-      yield node.children
-
-    def _expression(node, out=''):
-      for child in node.children:
-        yield out + child.name
-
-    for child in ast.children:
-      for x in _expression(child):
-        yield x
-
-    import random
-    def a():
-      for i in range(0, random.randint(1, 4)):
-        yield 'a'
-
-    def b():
-      for i in range(0, random.randint(1, 4)):
-        yield 'b'
-
-    s = 'abba'
-    for x in s:
-      if x == 'a':
-        for y in a():
-          yield y
-      if x == 'b':
-        for y in b():
-          yield y
-    '''
-    
 if __name__ == '__main__':
   import json
   from json import tool
   parser = MetonymParser()
-  s = 'What [town|city|state|province|country]:location_type did you learn to ride a [bike|skateboard|segway]:vehicle in?'
+  s = '[What|Which][day|day of the week][works][better|best][for you|for all of you]'
+
   n = parser.go(s)
   if parser.index == len(parser.tokens):
     compiler = MetonymCompiler()
     results = compiler.go(parser.output)
-    for x in results:
-      print(x)
+    for result in results:
+      print(result)
   else:
     print('Parser Error at index {}'.format(parser.index))
-  """
-  results = [{
-      text: 'Who created the JX3P?,
-      entities: [{
-          value: Who,
-          start: 0, 
-          end: 4,
-          entity: make
-        }, {
-          value: JX3P,
-          start: 16, 
-          end: 19,
-          entity: model
-        }
-      ]
-    }]
-  """
