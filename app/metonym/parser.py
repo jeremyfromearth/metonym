@@ -244,6 +244,7 @@ class MetonymParser(Parser):
   def optional(self):
     if self.next_char_is('('):
       result = self.first_of([
+          self.expression,
           self.option_list,
           self.string
         ])
@@ -308,35 +309,44 @@ class MetonymParser(Parser):
 class MetonymCompiler:
   def __init__(self):
     self.idx = 0
-    
+   
   def go(self, ast): 
-    def _parse(node, cache=None, optional=False):
-      if node.name == 'string':
-        value = ' '.join([n.value for n in node.children])
-        if cache is not None:
-          for c in cache:
-            if optional: yield c
-            yield c + ' ' + value
-        else:
-          yield value
-      elif node.name == 'expression-list':
-        i = 0
+    def _parse(node, cache=None, optional=False, entity=None):
+      if node.name == 'expression-list':
+        expr_count = 0
         current = None
         total = len(node.children)
         for child in node.children:
-          i += 1
-          current = list(_parse(child, current, optional))
-          if i == total:
+          entity = None
+          expr_count += 1
+          for c in child.children:
+            if c.name == 'entity':
+              entity = (c.name, c.value)
+          current = list(_parse(child, current, optional, entity))
+          if expr_count == total:
             for result in current:
               yield self.idx, result
               self.idx += 1
+      elif node.name == 'string':
+        value = ' '.join([n.value for n in node.children])
+        if cache is not None:
+          for c in cache:
+            if entity:
+              print(' '.join([c, value]))
+              print(entity, '[', value, ']', 'at', len(c), '-', len(c) + len(value))
+            if optional: yield c
+            yield ' '.join([c, value])
+        else:
+          if entity:
+            print(entity, 'at', len(c))
+          yield value
       elif node.name == 'optional':
         for child in node.children:
-          for result in _parse(child, cache, True):
+          for result in _parse(child, cache, True, entity):
             yield result
       else:
         for child in node.children:
-          for result in _parse(child, cache, optional):
+          for result in _parse(child, cache, optional, entity):
             yield result
 
     for result in _parse(ast, None):
@@ -346,13 +356,13 @@ if __name__ == '__main__':
   import json
   from json import tool
   parser = MetonymParser()
-  s = '[What|Which][day|day of the week][works][better|best](for you|for all of you)'
-
+  s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby]:proximity [grocery store|market|bakery|shop]:store_type (in town| around here)'
   n = parser.go(s)
   if parser.index == len(parser.tokens):
     compiler = MetonymCompiler()
     results = compiler.go(parser.output)
     for result in results:
-      print(result)
+      #print(result)
+      pass
   else:
     print('Parser Error at index {}'.format(parser.index))
