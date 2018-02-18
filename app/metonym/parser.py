@@ -321,7 +321,7 @@ class MetonymCompiler:
           expr_count += 1
           for c in child.children:
             if c.name == 'entity':
-              entity = (c.name, c.value)
+              entity = c.value
           current = list(_parse(child, current, optional, entity))
           if expr_count == total:
             for result in current:
@@ -335,7 +335,7 @@ class MetonymCompiler:
           for c in cache:
             e = None
             if entity:
-              e = (entity[1], value, len(c['str']), len(c['str']) + len(value))
+              e = (entity, value, len(c['str']), len(c['str']) + len(value))
             if optional: yield {'str': c['str'], 'entities': c['entities']}
             entities = c['entities'] + [e] if e else c['entities']
             c = {'str': c['str'] + ' ' + value, 'entities': entities}
@@ -343,7 +343,7 @@ class MetonymCompiler:
         else:
           entities = []
           if entity:
-            entities.append((entity[1], value, 0, len(value)))
+            entities.append((entity, value, 0, len(value)))
           yield {'str': value, 'entities': entities}
       elif node.name == 'optional':
         for child in node.children:
