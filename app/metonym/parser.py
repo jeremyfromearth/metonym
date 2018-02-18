@@ -244,7 +244,6 @@ class MetonymParser(Parser):
   def optional(self):
     if self.next_char_is('('):
       result = self.first_of([
-          self.expression,
           self.option_list,
           self.string
         ])
@@ -306,31 +305,38 @@ class MetonymParser(Parser):
       node.value = m
       return [node]
 
-import itertools
 class MetonymCompiler:
+  def __init__(self):
+    self.idx = 0
+    
   def go(self, ast): 
-    print('--------------- go() ---------------')
-    def _parse(node, cache=None):
+    def _parse(node, cache=None, optional=False):
       if node.name == 'string':
         value = ' '.join([n.value for n in node.children])
         if cache is not None:
           for c in cache:
+            if optional: yield c
             yield c + ' ' + value
         else:
           yield value
-      if node.name == 'expression-list':
+      elif node.name == 'expression-list':
         i = 0
         current = None
         total = len(node.children)
         for child in node.children:
           i += 1
-          current = list(_parse(child, current))
+          current = list(_parse(child, current, optional))
           if i == total:
             for result in current:
-              yield result
+              yield self.idx, result
+              self.idx += 1
+      elif node.name == 'optional':
+        for child in node.children:
+          for result in _parse(child, cache, True):
+            yield result
       else:
         for child in node.children:
-          for result in _parse(child, cache):
+          for result in _parse(child, cache, optional):
             yield result
 
     for result in _parse(ast, None):
@@ -340,7 +346,7 @@ if __name__ == '__main__':
   import json
   from json import tool
   parser = MetonymParser()
-  s = '[What|Which][day|day of the week][works][better|best][for you|for all of you]'
+  s = '[What|Which][day|day of the week][works][better|best](for you|for all of you)'
 
   n = parser.go(s)
   if parser.index == len(parser.tokens):
