@@ -328,18 +328,23 @@ class MetonymCompiler:
               yield self.idx, result
               self.idx += 1
       elif node.name == 'string':
+        # put the terms together
+        # TODO: Look for entities on individual terms
         value = ' '.join([n.value for n in node.children])
         if cache is not None:
           for c in cache:
+            e = None
             if entity:
-              print(' '.join([c, value]))
-              print(entity, '[', value, ']', 'at', len(c), '-', len(c) + len(value))
-            if optional: yield c
-            yield ' '.join([c, value])
+              e = (entity[1], value, len(c['str']), len(c['str']) + len(value))
+            if optional: yield {'str': c['str'], 'entities': c['entities']}
+            entities = c['entities'] + [e] if e else c['entities']
+            c = {'str': c['str'] + ' ' + value, 'entities': entities}
+            yield c
         else:
+          entities = []
           if entity:
-            print(entity, 'at', len(c))
-          yield value
+            entities.append((entity[1], value, 0, len(value)))
+          yield {'str': value, 'entities': entities}
       elif node.name == 'optional':
         for child in node.children:
           for result in _parse(child, cache, True, entity):
@@ -356,13 +361,17 @@ if __name__ == '__main__':
   import json
   from json import tool
   parser = MetonymParser()
-  s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby]:proximity [grocery store|market|bakery|shop]:store_type (in town| around here)'
+  s = '[Where can I find|How do I get to|Where is] '\
+      '[the|a|the nearset|a nearby]:proximity '\
+      '[grocery store|market|bakery|shop|coffeeshop]:store_type'\
+      '(in town|around here)'
+
   n = parser.go(s)
   if parser.index == len(parser.tokens):
     compiler = MetonymCompiler()
     results = compiler.go(parser.output)
     for result in results:
-      #print(result)
+      print(result)
       pass
   else:
     print('Parser Error at index {}'.format(parser.index))
