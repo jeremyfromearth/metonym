@@ -314,8 +314,8 @@ class MetonymCompiler:
   def __init__(self):
     self.idx = 0
    
-  def go(self, ast): 
-    def _parse(node, cache=None, optional=False, entity=None):
+  def go(self, ast):
+    def parse_node(node, cache=None, optional=False, entity=None):
       if node.name == 'expression-list':
         expr_count = 0
         current = None
@@ -326,14 +326,12 @@ class MetonymCompiler:
           for c in child.children:
             if c.name == 'entity':
               entity = c.value
-          current = list(_parse(child, current, optional, entity))
+          current = list(parse_node(child, current, optional, entity))
           if expr_count == total:
             for result in current:
               yield self.idx, result
               self.idx += 1
       elif node.name == 'string':
-        # put the terms together
-        # TODO: Look for entities on individual terms
         value = ' '.join([n.value for n in node.children])
         if cache is not None:
           for c in cache:
@@ -349,16 +347,12 @@ class MetonymCompiler:
           if entity:
             entities.append((entity, value, 0, len(value)))
           yield {'str': value, 'entities': entities}
-      elif node.name == 'optional':
-        for child in node.children:
-          for result in _parse(child, cache, True, entity):
-            yield result
       else:
         for child in node.children:
-          for result in _parse(child, cache, optional, entity):
+          for result in parse_node(child, cache, node.name=='optional', entity):
             yield result
 
-    for result in _parse(ast, None):
+    for result in parse_node(ast, None):
       yield result
 
 
@@ -366,14 +360,13 @@ if __name__ == '__main__':
   import json
   from json import tool
   parser = MetonymParser()
-  parser.logging = True
 
   s = '[Where can I find|How do I get to|Where is] '\
       '[the|a|the nearset|a nearby]:proximity '\
       '[grocery store|market|bakery|shop|coffeeshop]:store_type'\
       '(in town|around here):proximity'
 
-  s = '[Who | [What | Which] [company | brand]]:make [created|built|designed|produced] the [JX-3P]:make (synthesizer|keyboard|synth)?'
+  s = '[Who | [[What | Which] [company | brand]]]:make [created|built|designed|produced] the [JX-3P]:make (synthesizer|keyboard|synth)?'
 
   #s = '[I][am|am not|was|was not][a][human|machine]'
 
@@ -381,11 +374,14 @@ if __name__ == '__main__':
 
   n = parser.go(s)
   if parser.index == len(parser.tokens):
+    unique = set()
     compiler = MetonymCompiler()
     results = compiler.go(parser.output)
     if results:
       for result in results:
         print(result)
+        #unique.add(result[1]['str'])
         pass
+      print(len(unique))
   else:
     print('Parser Error at index {}'.format(parser.index))
