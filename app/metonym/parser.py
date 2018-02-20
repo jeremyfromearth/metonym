@@ -80,9 +80,11 @@ class Parser:
       self.depth += 1
       bt = self.index
       result = rule()
-      self.depth -= 1
       if result:
+        self.log('first_of -> {}'.format(rule.__name__))
+        self.depth -= 1
         return result
+      self.depth -= 1
       self.index = bt
 
   def one_or_more(self, rule):
@@ -212,10 +214,10 @@ class MetonymParser(Parser):
 
   def expression(self):
     result = self.first_of([
-        self.option_list,
         self.requirement,
-        self.string,
+        self.option_list,
         self.optional,
+        self.string
       ])
 
     if result:
@@ -229,11 +231,13 @@ class MetonymParser(Parser):
 
   def requirement(self):
     if self.next_char_is('['):
-      result = self.first_of([
-        self.option_list,
-        self.string,
-        self.requirement
-      ])
+      result = self.one_or_more(self.requirement)
+
+      if not result:
+        result = self.first_of([
+          self.option_list,
+          self.string,
+        ])
 
       if result:
         if self.next_char_is(']'):
@@ -357,21 +361,31 @@ class MetonymCompiler:
     for result in _parse(ast, None):
       yield result
 
+
 if __name__ == '__main__':
   import json
   from json import tool
   parser = MetonymParser()
+  parser.logging = True
+
   s = '[Where can I find|How do I get to|Where is] '\
       '[the|a|the nearset|a nearby]:proximity '\
       '[grocery store|market|bakery|shop|coffeeshop]:store_type'\
-      '(in town|around here)'
+      '(in town|around here):proximity'
+
+  s = '[Who | [What | Which] [company | brand]]:make [created|built|designed|produced] the [JX-3P]:make (synthesizer|keyboard|synth)?'
+
+  #s = '[I][am|am not|was|was not][a][human|machine]'
+
+  #s = '[a|[[b][c|d]]]' # a, bc, bd
 
   n = parser.go(s)
   if parser.index == len(parser.tokens):
     compiler = MetonymCompiler()
     results = compiler.go(parser.output)
-    for result in results:
-      print(result)
-      pass
+    if results:
+      for result in results:
+        print(result)
+        pass
   else:
     print('Parser Error at index {}'.format(parser.index))
