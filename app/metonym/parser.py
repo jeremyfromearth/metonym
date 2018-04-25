@@ -185,25 +185,25 @@ class MetonymParser(Parser):
   def __init__(self):
     super(MetonymParser, self).__init__()
 
-  def pre(self, in_string):
+  def pre(self, in_str):
     """
     Metonym doesn't require any pre-processing, but this is a good chance to do some simple validation
     """
     # check for balanced parens
-    lp = in_string.count('(')
-    rp = in_string.count(')')
+    lp = in_str.count('(')
+    rp = in_str.count(')')
     if lp != rp:
       raise Exception('Parenthesis mis-match: {} left paren(s), {} right paren(s). '
         'Input must contain an equal number of both'.format(lp, rp))
 
     # check for balanced braces
-    lb = in_string.count('[')
-    rb = in_string.count(']')
+    lb = in_str.count('[')
+    rb = in_str.count(']')
     if lb != rb:
       raise Exception('Brace mis-match: {} left brace(s), {} right brace(s). '
         'Input must contain an equal number of both'.format(lb, rb))
       
-    return in_string
+    return in_str
 
   def lex(self, string):
     """
@@ -316,24 +316,33 @@ class MetonymCompiler:
 
   def flatten(self, items, seqtypes=(list, tuple)):
     for i, x in enumerate(items):
-        while i < len(items) and isinstance(items[i], seqtypes):
-            items[i:i+1] = items[i]
+      while i < len(items) and isinstance(items[i], seqtypes):
+        items[i:i+1] = items[i]
     return items
   
   def go(self, ast):
-    def parse_node(node, entity=''):
+    def parse_node(node):
       if node.name == 'expression-list' or node.name == 'requirement':
-        def concat(tree, idx):
+        def permutate(tree, idx):
           if idx < len(tree):
             branch = tree[idx]
             for leaf in branch:
-              for el in concat(tree, idx+1):
-                yield leaf + ' ' + el
+              for el in permutate(tree, idx+1):
+                space = ' ' if leaf != '' else ''
+                yield leaf + space + el
               if idx + 1 == len(tree):
                 yield leaf
         parsed = [parse_node(n) for n in node.children]
-        result = concat(parsed, 0)
+        result = permutate(parsed, 0)
         return list(result)
+      elif node.name == 'expression':
+        entity = None
+        for n in node.children:
+          if n.name == 'entity':
+            entity = n
+        expr_result = self.flatten([parse_node(n) for n in node.children])
+        print(expr_result)
+        return expr_result 
       elif node.name == 'optional':
         return self.flatten([parse_node(n) for n in node.children] + [''])
       elif node.name == 'string':
@@ -350,13 +359,15 @@ if __name__ == '__main__':
 
   #s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] market:location?'
 
-  s = '[Who | [[What | Which] [company | brand]]]:make [created|built|designed|produced] the [JX-3P]:model (synthesizer|keyboard|synth)?'
+  s = '[Who | [[What | Which] [company | brand]]]:make [created|built|designed|produced] the [JX-3P]:model (synthesizer|keyboard|synth):instrument?'
 
-  #s = '[I][am|am not|was|was not][a][human|machine]'
+  #s = '[I]:subject[am|am not|was|was not]:qualifier[a][human|machine]:object'
 
   #s = '[a|[[b][c|d]]]' # a, bc, bd
 
   #s = '[hello|goodbye|hey there|hola|seeya][world|earth|universe]'
+
+  #s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] (grocery|shoe|instrument) store:location?'
 
   n = parser.go(s)
   if parser.index == len(parser.tokens):
