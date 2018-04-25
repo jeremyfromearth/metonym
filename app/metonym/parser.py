@@ -314,41 +314,64 @@ class MetonymCompiler:
   def __init__(self):
     self.idx = 0 
 
-  def flatten(self, items, seqtypes=(list, tuple)):
-    for i, x in enumerate(items):
-      while i < len(items) and isinstance(items[i], seqtypes):
-        items[i:i+1] = items[i]
-    return items
-  
   def go(self, ast):
+    def flatten(items, seqtypes=(list, tuple)):
+      for i, x in enumerate(items):
+        while i < len(items) and isinstance(items[i], seqtypes):
+          items[i:i+1] = items[i]
+      return items
+
+    def permutate(tree, idx):
+      if idx < len(tree):
+        branch = tree[idx]
+        for leaf in branch:
+          for el in permutate(tree, idx+1):
+            space = ' ' if leaf != '' else ''
+            yield leaf + space + el
+          if idx + 1 == len(tree):
+            yield leaf
+        
     def parse_node(node):
-      if node.name == 'expression-list' or node.name == 'requirement':
-        def permutate(tree, idx):
-          if idx < len(tree):
-            branch = tree[idx]
-            for leaf in branch:
-              for el in permutate(tree, idx+1):
-                space = ' ' if leaf != '' else ''
-                yield leaf + space + el
-              if idx + 1 == len(tree):
-                yield leaf
+      if node.name == 'expression-list':
+        parsed = []
+        entities = {}
+        for i in range(len(node.children)):
+          child = node.children[i]
+          for e in child.children:
+            if e.name == 'entity':
+              entities[i] = e
+          parsed.append(parse_node(child))
+        exprs = list(itertools.product(*parsed))
+        
+        results = []
+        for i in range(len(exprs)):
+          out = ''
+          result = {'text':'', 'entities': []}
+          for j in range(len(exprs[i])):
+            start = len(out)
+            out += exprs[i][j] + ' ' 
+            end = len(out) - 1
+            expr = exprs[i][j]
+            if j in entities:
+              if expr != '':
+                result['entities'].append({
+                  'value': exprs[i][j], 
+                  'start': start, 
+                  'end': end, 
+                  'entity': entities[j].value
+                })
+            result['text'] = out.strip()
+            results.append(result)
+        return results
+      elif node.name == 'requirement':
         parsed = [parse_node(n) for n in node.children]
-        result = permutate(parsed, 0)
-        return list(result)
-      elif node.name == 'expression':
-        entity = None
-        for n in node.children:
-          if n.name == 'entity':
-            entity = n
-        expr_result = self.flatten([parse_node(n) for n in node.children])
-        print(expr_result)
-        return expr_result 
+        return list(permutate(parsed, 0))
       elif node.name == 'optional':
-        return self.flatten([parse_node(n) for n in node.children] + [''])
+        return flatten([''] + [parse_node(n) for n in node.children])
       elif node.name == 'string':
         return [' '.join([term.value for term in node.children])]
       else:
-        return self.flatten([parse_node(n) for n in node.children])
+        return flatten([parse_node(n) for n in node.children])
       return None
     return parse_node(ast)
 
@@ -359,7 +382,7 @@ if __name__ == '__main__':
 
   #s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] market:location?'
 
-  s = '[Who | [[What | Which] [company | brand]]]:make [created|built|designed|produced] the [JX-3P]:model (synthesizer|keyboard|synth):instrument?'
+  #s = '[Who | [[What | Which] [company | brand]]]:make [created|built|designed|produced] the [JX-3P]:model (synthesizer|keyboard|synth):instrument?'
 
   #s = '[I]:subject[am|am not|was|was not]:qualifier[a][human|machine]:object'
 
@@ -367,7 +390,7 @@ if __name__ == '__main__':
 
   #s = '[hello|goodbye|hey there|hola|seeya][world|earth|universe]'
 
-  #s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] (grocery|shoe|instrument) store:location?'
+  s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] (grocery|shoe|instrument) store:location?'
 
   n = parser.go(s)
   if parser.index == len(parser.tokens):
