@@ -313,72 +313,48 @@ class MetonymParser(Parser):
 class MetonymCompiler:
   def __init__(self):
     self.idx = 0 
+
+  def flatten(self, items, seqtypes=(list, tuple)):
+    for i, x in enumerate(items):
+        while i < len(items) and isinstance(items[i], seqtypes):
+            items[i:i+1] = items[i]
+    return items
   
   def go(self, ast):
-    def parse_node(node, cache=None, optional=False, entity=None):
-      if node.name == 'expression-list':
-        current = None
-        for child in node.children:
-          entity = None
-          for c in child.children:
-            if c.name == 'entity':
-              entity = c.value
-          current = list(parse_node(child, current, optional, entity))
-        if current and node.name == 'expression-list':
-          for result in current:
-            yield self.idx, result
-            self.idx += 1
+    def parse_node(node, entity=''):
+      if node.name == 'expression-list' or node.name == 'requirement':
+        def concat(tree, idx):
+          if idx < len(tree):
+            branch = tree[idx]
+            for leaf in branch:
+              for el in concat(tree, idx+1):
+                yield leaf + ' ' + el
+              if idx + 1 == len(tree):
+                yield leaf
+        parsed = [parse_node(n) for n in node.children]
+        result = concat(parsed, 0)
+        return list(result)
+      elif node.name == 'optional':
+        return self.flatten([parse_node(n) for n in node.children] + [''])
       elif node.name == 'string':
-        value = ' '.join([n.value for n in node.children])
-        if cache is not None:
-          for c in cache:
-            e = None
-            if entity:
-              e = (entity, value, len(c['str']), len(c['str']) + len(value))
-            if optional: yield {'str': c['str'], 'entities': c['entities']}
-            entities = c['entities'] + [e] if e else c['entities']
-            yield {'str': c['str'] + ' ' + value, 'entities': entities}
-        else:
-          entities = []
-          if entity:
-            entities.append((entity, value, 0, len(value)))
-          yield {'str': value, 'entities': entities}
-      elif node.name == 'requirement':
-        results = []
-        for child in node.children:
-          results.append(parse_node(child, cache, optional, entity))
-
-        for r in results:
-          for x in r:
-            print('hello', x)
-
-        for result in parse_node(child, cache, optional, entity):
-          yield result
+        return [' '.join([term.value for term in node.children])]
       else:
-        for child in node.children:
-          for result in parse_node(child, cache, node.name=='optional', entity):
-            yield result
-
-    for result in parse_node(ast, None):
-      yield result
+        return self.flatten([parse_node(n) for n in node.children])
+      return None
+    return parse_node(ast)
 
 if __name__ == '__main__':
   import json
   from json import tool
   parser = MetonymParser()
 
-  '''
-  s = '[Where can I find|How do I get to|Where is] '\
-      '[the|a|the nearset|a nearby]:proximity '\
-      '[grocery store|market|bakery|shop|coffeeshop]:store_type'\
-      '(in town|around here):proximity'
-  '''
+  #s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] market:location?'
 
-  #s = '[Who | [[What | Which] [company | brand]]]:make [created|built|designed|produced] the [JX-3P]:make (synthesizer|keyboard|synth)?'
+  s = '[Who | [[What | Which] [company | brand]]]:make [created|built|designed|produced] the [JX-3P]:model (synthesizer|keyboard|synth)?'
 
   #s = '[I][am|am not|was|was not][a][human|machine]'
 
-  s = '[a|[[b][c|d]]]' # a, bc, bd
+  #s = '[a|[[b][c|d]]]' # a, bc, bd
 
   #s = '[hello|goodbye|hey there|hola|seeya][world|earth|universe]'
 
@@ -386,8 +362,7 @@ if __name__ == '__main__':
   if parser.index == len(parser.tokens):
     compiler = MetonymCompiler()
     results = compiler.go(parser.output)
-    if results:
-      for result in results:
-        print(result)
+    for r in results:
+      print(r)
   else:
     print('Parser Error at index {}'.format(parser.index))
