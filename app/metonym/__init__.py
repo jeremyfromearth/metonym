@@ -1,11 +1,12 @@
 import json
 import requests
 import markdown
-from flask import Flask, render_template, request
-from metonym.parser import MetonymParser
+from flask import Flask, render_template, request, jsonify
+from metonym.parser import MetonymParser, RasaCompiler
 
 app = Flask(__name__)
 parser = MetonymParser()
+compiler = RasaCompiler()
 
 @app.route('/')
 def index():
@@ -13,11 +14,17 @@ def index():
 
 @app.route('/parse', methods=['POST'])
 def parse():
-  ast = None
   try:
-    parser.go(request.get_data(as_text=True))
+    ast = parser.go(request.get_data(as_text=True))
+    ast_json = json.loads(repr(ast))
+    rasa = compiler.go(ast, 'test-intent')
+    rasa_json = json.loads(rasa)
+    return jsonify({
+      'ast': ast_json,
+      'rasa': rasa_json
+      })
   except Exception as e:
+    print(e)
     return json.dumps({
-          'error': str(e)
-        })
-  return str(parser.output)
+      'error': str(e)
+    })

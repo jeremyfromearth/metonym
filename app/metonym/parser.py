@@ -1,17 +1,19 @@
 import re
 import json
-import string
 import itertools
 from collections import Iterable
 
 class Node:
   """
-  A simple class containing a name and list of leaf children
+  A simple class containing a name and list of children
   """
   def __init__(self, node_type):
     self.name = node_type
     self.value = ''
     self.children = []
+
+  def to_json(self):
+    return json.dumps(self.__dict__, default=lambda o: o.__dict__)
 
   def __repr__(self):
     return json.dumps(self.__dict__, default=lambda o: o.__dict__)
@@ -350,7 +352,7 @@ class MetonymCompiler:
           for j in range(len(exprs[i])):
             start = len(out)
             out += exprs[i][j] + ' ' 
-            end = len(out) - 1
+            end = len(out) - 2
             expr = exprs[i][j]
             if j in entities:
               if expr != '':
@@ -375,28 +377,34 @@ class MetonymCompiler:
       return None
     return parse_node(ast)
 
+class RasaCompiler(MetonymCompiler):
+  def go(self, ast, intent_type):
+    result = super(RasaCompiler, self).go(ast) 
+    for r in result:
+      r['intent'] = intent_type
+    return json.dumps({
+      'rasa_nlu_data': {
+          'common_examples': result
+        }
+      })
+
 if __name__ == '__main__':
   import json
   from json import tool
   parser = MetonymParser()
 
   #s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] market:location?'
-
   #s = '[Who | [[What | Which] [company | brand]]]:make [created|built|designed|produced] the [JX-3P]:model (synthesizer|keyboard|synth):instrument?'
-
-  #s = '[I]:subject[am|am not|was|was not]:qualifier[a][human|machine]:object'
-
-  #s = '[a|[[b][c|d]]]' # a, bc, bd
-
+  #s = '[I]:subject[am|am not|was|was not]:qualifier[a][human|machine|animal|plant]:object'
+  #s = '[a|[[b][c|d]]]:test' # a, bc, bd
   #s = '[hello|goodbye|hey there|hola|seeya][world|earth|universe]'
-
-  s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] (grocery|shoe|instrument) store:location?'
+  #s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] (grocery|shoe|instrument) store:location?'
+  #s = 'What [town|city|state|province|country]:LOCATION_TYPE did you learn to ride a [bike|skateboard|segway]:VEHICLE in?'
 
   n = parser.go(s)
   if parser.index == len(parser.tokens):
-    compiler = MetonymCompiler()
-    results = compiler.go(parser.output)
-    for r in results:
-      print(r)
+    compiler = RasaCompiler()
+    results = compiler.go(parser.output, 'test-intent')
+    print(results)
   else:
     print('Parser Error at index {}'.format(parser.index))

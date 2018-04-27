@@ -75,12 +75,19 @@ code {
 }
 
 .footer input[type=text] {
-  flex: 1;
-  margin: 0 1em 0 1em;
+  margin: 0 0 0 1em;
 }
 
 .footer input[type=button] {
-  float: right;
+  margin: 0 0 0 1em;
+}
+
+.footer .intent-input {
+  flex: 1;
+}
+
+.footer .metonym-input {
+  flex: 4;
 }
 
 .menu-container {
@@ -110,7 +117,8 @@ code {
   overflow-y: scroll;
 }
 
-.raw-details, .raw-result {
+.raw-result {
+  resize:none;
   flex: 1 0 auto;
   width: 45%;
   margin: 1em;
@@ -118,10 +126,6 @@ code {
   border: 1px dashed #999;
   border-radius: 0.5em;
   overflow-y: scroll;
-}
-
-.raw-result {
-  resize:none;
 }
 
 .titlebar {

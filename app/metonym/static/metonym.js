@@ -16,11 +16,13 @@ function go() {
   //
   // -------------------------------------------------------------
   var content = el('content');
-  var input = el('metonym-input');
+  var intent_input = el('intent-input');
+  var metonym_input = el('metonym-input');
   var error_bar = el('error-bar');
   var overview_txt = el('overview-text');
   var parse_btn = el('parse-btn');
-  var raw_content = el('raw-result');
+  var raw_ast = el('raw-ast');
+  var raw_rasa = el('raw-rasa');
   var example_select = el('example-select');
   var tree = TreeVisualization(content.clientWidth, content.clientHeight, '#svg')
 
@@ -75,7 +77,7 @@ function go() {
     update_input();
   });
 
-  input.addEventListener('keyup', function() {
+  metonym_input.addEventListener('keyup', function() {
     error_bar.style.display = 'none';
   });
 
@@ -89,12 +91,14 @@ function go() {
   }
 
   function update_input() {
-    input.value = example_select.value
+    metonym_input.value = example_select.value
   }
 
   function parse_input() {
     tree.clear();
-    raw_content.value = '';
+    raw_ast.value = '';
+    raw_rasa.value = '';
+    
     var xhr = new XMLHttpRequest();
     xhr.open('POST', './parse', true);
     xhr.setRequestHeader("Content-type", "text");
@@ -105,9 +109,16 @@ function go() {
           error_bar.style.display = 'block';
           error_bar.innerHTML = result.error;
         } else {
-          show_tab('tree-view-tab');
-          tree.create(Object.assign({}, result));
-          raw_content.value = JSON.stringify(JSON.parse(xhr.response), null, 2);
+          var ast = result.ast;
+          if(ast) {
+            tree.create(Object.assign({}, ast));
+            raw_ast.value = JSON.stringify(JSON.parse(xhr.response).ast, null, 2);
+          }
+
+          var rasa = result.rasa;
+          if(rasa) {
+            raw_rasa.value = JSON.stringify(rasa, null, 2);
+          }
         }
       } else {
         error_bar.style.display = 'block';
@@ -115,7 +126,7 @@ function go() {
       }
     };
 
-    xhr.send(input.value);
+    xhr.send(metonym_input.value);
   }
 
   // -------------------------------------------------------------
