@@ -15,9 +15,11 @@ def index():
 @app.route('/parse', methods=['POST'])
 def parse():
   try:
-    ast = parser.go(request.get_data(as_text=True))
+    syntax = request.json['syntax'];
+    intent = request.json['intent'];
+    ast = parser.go(syntax)
     ast_json = json.loads(repr(ast))
-    rasa = compiler.go(ast, 'test-intent')
+    rasa = compiler.go(ast, intent)
     rasa_json = json.loads(rasa)
     return jsonify({
       'ast': ast_json,

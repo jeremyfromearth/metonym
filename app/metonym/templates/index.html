@@ -27,7 +27,12 @@
             </div>
           </div>
         </div>
-        <div id='output-tab' class='content-tab'></div>
+        <div id='output-tab' class='content-tab'>
+          <div id='summary-container'>
+          </div>
+          <div id='examples-container'>
+          </div>
+        </div>
         <div id='tree-view-tab' class='content-tab'>
           <svg id='svg'></svg>
         </div>
@@ -40,8 +45,8 @@
       <div class='footer'>
         <form class='pure-form'>
           <select id='example-select' class='input-select' type='select'></select>
-          <input id='intent-input' class='intent-input' type='text'></input>
-          <input id='metonym-input' class='metonym-input' type='text'></input>
+          <input id='intent-input' class='intent-input' placeholder='Intent Type' type='text'></input>
+          <input id='metonym-input' class='metonym-input' placeholder='Metonym Syntax' type='text'></input>
           <input id='parse-btn' class='button-primary pure-button' type='button' value='Go!'></input>
         </form>
       </div>

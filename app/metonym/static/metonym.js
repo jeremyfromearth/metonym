@@ -8,7 +8,7 @@ function go() {
     {
       title: 'Asking for Directions', 
       syntax: '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] [market]:location?',
-      intent: 'wayfining'
+      intent: 'wayfinding'
     }, {
       title: 'Greetings', 
       syntax: '[Hello|Hi|Hey there|Hola|Hiya]:greeting',
@@ -113,7 +113,7 @@ function go() {
     
     var xhr = new XMLHttpRequest();
     xhr.open('POST', './parse', true);
-    xhr.setRequestHeader("Content-type", "text");
+    xhr.setRequestHeader("Content-type", "application/json");
     xhr.onload = function () {
       if(xhr.status == 200) {
         var result = JSON.parse(xhr.response);
@@ -138,7 +138,7 @@ function go() {
       }
     };
 
-    xhr.send(metonym_input.value);
+    xhr.send(JSON.stringify({syntax: metonym_input.value, intent: intent_input.value}));
   }
 
   // -------------------------------------------------------------
