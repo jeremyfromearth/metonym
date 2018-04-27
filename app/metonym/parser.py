@@ -359,8 +359,8 @@ class MetonymCompiler:
                   'end': end, 
                   'entity': entities[j].value
                 })
-            result['text'] = out.strip()
-            results.append(result)
+          result['text'] = out.strip()
+          results.append(result)
         return results
       elif node.name == 'requirement':
         parsed = [parse_node(n) for n in node.children]
@@ -371,7 +371,6 @@ class MetonymCompiler:
         return [' '.join([term.value for term in node.children])]
       else:
         return flatten([parse_node(n) for n in node.children])
-      return None
     return parse_node(ast)
 
 class RasaCompiler(MetonymCompiler):
@@ -396,7 +395,7 @@ if __name__ == '__main__':
   #s = '[a|[[b][c|d]]]:test' # a, bc, bd
   #s = '[hello|goodbye|hey there|hola|seeya][world|earth|universe]'
   #s = '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] (grocery|shoe|instrument) store:location?'
-  #s = 'What [town|city|state|province|country]:LOCATION_TYPE did you learn to ride a [bike|skateboard|segway]:VEHICLE in?'
+  s = 'What [town|city|state|province|country]:LOCATION_TYPE did you learn to ride a [bike|skateboard|segway]:VEHICLE in?'
 
   n = parser.go(s)
   if parser.index == len(parser.tokens):
