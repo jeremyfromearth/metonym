@@ -4,11 +4,21 @@ function go() {
   // Example Data
   //
   // -------------------------------------------------------------
-  var examples = {
-    'Directions': '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] [market]:location?',
-    'Greetings Option List': '[Hello|Hi|Hey there|Hola|Hiya]:greeting',
-    'Multiple Entities': 'What [town|city|state|province|country]:location_type did you learn to ride a [bike|skateboard|segway]:vehicle in?'
-  };
+  var examples = [
+    {
+      title: 'Asking for Directions', 
+      syntax: '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] [market]:location?',
+      intent: 'wayfining'
+    }, {
+      title: 'Greetings', 
+      syntax: '[Hello|Hi|Hey there|Hola|Hiya]:greeting',
+      intent: 'greeting'
+    }, {
+      title: 'Multiple Entities',
+      syntax: 'What [town|city|state|province|country]:location_type did you learn to [ride]:activity a [bike|skateboard|segway]:vehicle in?',
+      intent: 'where-did-you-learn-question'
+    }
+  ];
 
   // -------------------------------------------------------------
   //
@@ -26,11 +36,11 @@ function go() {
   var example_select = el('example-select');
   var tree = TreeVisualization(content.clientWidth, content.clientHeight, '#svg')
 
-  Object.keys(examples).forEach(function(item) {
-    var c = document.createElement("option", item);
-    c.text = item;
-    c.value = examples[item];
-    example_select.options.add(c, item);
+  examples.forEach(function(item, idx) {
+    var o = document.createElement("option", item);
+    o.text = item.title;
+    o.value = idx;;
+    example_select.options.add(o, item);
   });
 
   // -------------------------------------------------------------
@@ -91,7 +101,9 @@ function go() {
   }
 
   function update_input() {
-    metonym_input.value = example_select.value
+    var example = examples[example_select.value];
+    metonym_input.value = example.syntax;
+    intent_input.value = example.intent;
   }
 
   function parse_input() {
