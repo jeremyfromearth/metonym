@@ -10,8 +10,12 @@ function go() {
       syntax: '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] [market]:location?',
       intent: 'wayfinding'
     }, {
-      title: 'Greetings', 
+      title: 'Simple Greetings', 
       syntax: '[Hello|Hi|Hey there|Hola|Hiya]:greeting',
+      intent: 'greeting'
+    }, {
+      title: 'Greeting With Follow Up',
+      syntax: '[Hello|Hi|Hey there|Hola|Hiya]:greeting, (How\'s it going|How are you|What\'s up):follow_up?',
       intent: 'greeting'
     }, {
       title: 'Multiple Entities',
@@ -33,6 +37,8 @@ function go() {
   var parse_btn = el('parse-btn');
   var raw_ast = el('raw-ast');
   var raw_rasa = el('raw-rasa');
+  var summary_container = el('summary-container');
+  var examples_container = el('examples-container');
   var example_select = el('example-select');
   var tree = TreeVisualization(content.clientWidth, content.clientHeight, '#svg')
 
@@ -100,6 +106,11 @@ function go() {
     return document.getElementById(id);
   }
 
+  function clear(id) {
+    var e = el(id);
+    while(e.firstChild) e.removeChild(e.firstChild);
+  }
+
   function update_input() {
     var example = examples[example_select.value];
     metonym_input.value = example.syntax;
@@ -130,6 +141,33 @@ function go() {
           var rasa = result.rasa;
           if(rasa) {
             raw_rasa.value = JSON.stringify(rasa, null, 2);
+            var examples = rasa.rasa_nlu_data.common_examples;
+            var entity_data = {};
+            examples.forEach(function(item, idx) {
+              item.entities.forEach(function(ent, idx) {
+                if(entity_data[ent.entity]) {
+                  entity_data[ent.entity].count += 1;
+                } else {
+                  entity_data[ent.entity] = {
+                    color_class: 'entity-' + ((idx+1)%10),
+                    count: 1
+                  };
+                }
+              });
+            });
+            console.log(examples.length + ' examples generated');
+            console.log(entity_data);
+
+            clear('summary-container');
+            clear('examples-container');
+
+            var entity_summary = '<h3>Entities</h3><ul class="entity-list">';
+            Object.keys(entity_data).forEach(function(item, idx) {
+              var ent = entity_data[item]
+              entity_summary += `<li class="entity-li ${ent.color_class}">${item}: ${ent.count}</li>`;
+            });
+            entity_summary += '</ul>'
+            summary_container.innerHTML = `<h2>Number of Examples ${examples.length}</h2> ${entity_summary}`;
           }
         }
       } else {

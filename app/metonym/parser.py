@@ -12,9 +12,6 @@ class Node:
     self.value = ''
     self.children = []
 
-  def to_json(self):
-    return json.dumps(self.__dict__, default=lambda o: o.__dict__)
-
   def __repr__(self):
     return json.dumps(self.__dict__, default=lambda o: o.__dict__)
 

@@ -117,6 +117,41 @@ code {
   overflow-y: scroll;
 }
 
+.output-container {
+  padding: 1em;
+}
+
+.entity-list {
+  padding: 0;
+  margin: 0 1em;
+  display: inline-block;
+  list-style-type: none;
+}
+
+.entity-li { 
+  padding: 0.25em;
+  margin: 0 0.25em 0.25em 0;
+  border-radius: 0.25em;
+}
+
+.entity { 
+  /*color: white;*/
+  display: inline;
+  padding: 0.25em;
+  border-radius: 0.25em;
+}
+
+.entity-1 {background-color: #0984e3;}
+.entity-2 {background-color: #ffeaa7;}
+.entity-3 {background-color: #a29bfe;}
+.entity-4 {background-color: #fab1a0;}
+.entity-5 {background-color: #ff7675;}
+.entity-6 {background-color: #fd79a8;}
+.entity-7 {background-color: #d63031;}
+.entity-8 {background-color: #e17055;}
+.entity-9 {background-color: #fdcb6e;}
+.entity-10 {background-color: #00b894;}
+
 .raw-result {
   resize:none;
   flex: 1 0 auto;
