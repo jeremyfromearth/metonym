@@ -189,7 +189,12 @@ function go() {
 
               // Wrap entities in colored labels
               var cidx = 0;
-              examples_str += '<div class="example-wrapper"><div class="example">'
+              examples_str += 
+                `<div class="example-row">
+                 <div class="example-id">${eidx}.</div>
+                 <div class='example-wrapper'>
+                 `
+                
               while(cidx < text.length) {
                 if(entity_idx_map[cidx]) {
                   var ent = entity_idx_map[cidx];
@@ -204,7 +209,10 @@ function go() {
                   cidx++;
                 }
               }
-              examples_str += '</div></div>';
+
+              examples_str += ` 
+                <input type="checkbox" value="${eidx}" class="example-checkbox" checked="true"></input>
+                </div></div>`;
             });
             
             examples_container.innerHTML = examples_str;

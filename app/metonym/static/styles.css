@@ -1,7 +1,17 @@
+@font-face {
+  font-family: "Terminus";
+  src: url("./Terminus.ttf") format("truetype")
+}
+
+@font-face {
+  font-family: "Terminus Bold";
+  src: url("./TerminusBold.ttf") format("truetype")
+}
+
 html, body {
   margin: 0;
   height: 100%;
-  font-family: monospace;
+  font-family: "Terminus";
 }
 
 .button-primary {
@@ -54,23 +64,46 @@ code {
 }
 
 .examples-container {
-  resize: none;
   margin: 1em;
+  resize: none;
   flex: 1 0 auto;
-  border: 1px dashed #999;
+  border: 1px solid #eee;
   border-radius: 0.5em;
   overflow-y: scroll;
   padding: 0.25em;
 }
 
 .example-wrapper {
-  padding: 0.25em;
+  background-color: #eee;
+  padding: 0.5em;
+  border: 1px solid #ddd;
+  border-radius: 0.25em;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.example-row {
+  padding: 1em;
+  display: flex;
+  flex-direction: row;
 }
 
 .example {
   padding: 1em;
   border-radius: 0.25em;
   background-color: #eee;
+}
+
+.example-checkbox {
+  margin-left: auto;
+}
+
+.example-id {
+  margin-right: 1em;
+  display: flex;
+  align-items: center;
 }
 
 .error-bar {
@@ -158,10 +191,10 @@ code {
 }
 
 .entity { 
-  /*color: white;*/
   display: inline;
   padding: 0.25em;
   border-radius: 0.25em;
+  margin: 0 0 0 0.4em;
 }
 
 .entity-1 {background-color: #0984e3;}
@@ -181,7 +214,7 @@ code {
   width: 45%;
   margin: 1em;
   padding: 1em;
-  border: 1px dashed #999;
+  border: 1px solid #eee;
   border-radius: 0.5em;
   overflow-y: scroll;
 }
