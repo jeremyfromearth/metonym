@@ -24,8 +24,8 @@ function go() {
     }, {
       title: 'Hotel Search', 
       syntax: '[I am|I\'m|We are|We\'re]:person ' + 
-              '[searching|looking|trying to find]:action ' + 
-              'a [place to stay|hotel|airbnb]:lodging_type '+
+              '[searching|looking]:action for ' + 
+              '[a place to stay|a hotel|an airbnb]:lodging_type '+
               'in [the city|Portland, Oregon|Columbus, Ohio|Berlin, Germany]:location ' + 
               '(May 1st|Saturday night|this weekend|tomorrow):date',
       'intent': 'hotel-search'
@@ -226,7 +226,7 @@ function go() {
   // -------------------------------------------------------------
   update_input();
   parse_input();
-  show_tab('tree-view-tab');
+  show_tab('output-tab');
 }
 
 window.addEventListener('load', go);
