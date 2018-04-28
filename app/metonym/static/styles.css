@@ -50,6 +50,29 @@ code {
   display: flex;
 }
 
+.output-content-tab {
+}
+
+.examples-container {
+  resize: none;
+  margin: 1em;
+  flex: 1 0 auto;
+  border: 1px dashed #999;
+  border-radius: 0.5em;
+  overflow-y: scroll;
+  padding: 0.25em;
+}
+
+.example-wrapper {
+  padding: 0.25em;
+}
+
+.example {
+  padding: 1em;
+  border-radius: 0.25em;
+  background-color: #eee;
+}
+
 .error-bar {
   width: 100%;
   height: 15px;
@@ -142,8 +165,8 @@ code {
 }
 
 .entity-1 {background-color: #0984e3;}
-.entity-2 {background-color: #ffeaa7;}
-.entity-3 {background-color: #a29bfe;}
+.entity-2 {background-color: #fdcb6e;}
+.entity-3 {background-color: #81ecec;}
 .entity-4 {background-color: #fab1a0;}
 .entity-5 {background-color: #ff7675;}
 .entity-6 {background-color: #fd79a8;}
@@ -169,6 +192,7 @@ code {
   display: flex;
   align-items: center;
   flex-direction: row;
+  flex-shrink: 0;
   justify-content: space-between;
   padding: 0.5em 1em 0.5em 1em; 
 }

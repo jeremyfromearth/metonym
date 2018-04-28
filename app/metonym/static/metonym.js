@@ -21,6 +21,14 @@ function go() {
       title: 'Multiple Entities',
       syntax: 'What [town|city|state|province|country]:location_type did you learn to [ride]:activity a [bike|skateboard|segway]:vehicle in?',
       intent: 'where-did-you-learn-question'
+    }, {
+      title: 'Hotel Search', 
+      syntax: '[I am|I\'m|We are|We\'re]:person ' + 
+              '[searching|looking|trying to find]:action ' + 
+              'a [place to stay|hotel|airbnb]:lodging_type '+
+              'in [the city|Portland, Oregon|Columbus, Ohio|Berlin, Germany]:location ' + 
+              '(May 1st|Saturday night|this weekend|tomorrow):date',
+      'intent': 'hotel-search'
     }
   ];
 
@@ -168,6 +176,38 @@ function go() {
             });
             entity_summary += '</ul>'
             summary_container.innerHTML = `<h2>Number of Examples ${examples.length}</h2> ${entity_summary}`;
+
+            var examples_str = '';
+            examples.forEach(function(example, eidx) {
+              var parts = [];
+              var text = example.text;
+              var entities = example.entities;
+              var entity_idx_map = {}
+              entities.forEach(function(entity) {
+                entity_idx_map[entity.start] = entity;
+              });
+
+              // Wrap entities in colored labels
+              var cidx = 0;
+              examples_str += '<div class="example-wrapper"><div class="example">'
+              while(cidx < text.length) {
+                if(entity_idx_map[cidx]) {
+                  var ent = entity_idx_map[cidx];
+                  examples_str += `<div class="entity ${entity_data[ent.entity].color_class}"}">`;
+                  while(cidx < ent.end+1) {
+                    examples_str += text[cidx];
+                    cidx++;
+                  }
+                  examples_str += '</div>';
+                } else {
+                  examples_str += text[cidx]
+                  cidx++;
+                }
+              }
+              examples_str += '</div></div>';
+            });
+            
+            examples_container.innerHTML = examples_str;
           }
         }
       } else {

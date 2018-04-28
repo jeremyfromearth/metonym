@@ -375,7 +375,8 @@ class MetonymCompiler:
 
 class RasaCompiler(MetonymCompiler):
   def go(self, ast, intent_type):
-    result = super(RasaCompiler, self).go(ast) 
+    result = super(RasaCompiler, self).go(ast)
+    print(len(result))
     for r in result:
       r['intent'] = intent_type
     return json.dumps({
@@ -401,6 +402,5 @@ if __name__ == '__main__':
   if parser.index == len(parser.tokens):
     compiler = RasaCompiler()
     results = compiler.go(parser.output, 'test-intent')
-    print(results)
   else:
     print('Parser Error at index {}'.format(parser.index))
