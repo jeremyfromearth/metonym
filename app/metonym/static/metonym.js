@@ -191,7 +191,7 @@ function go() {
               var cidx = 0;
               examples_str += 
                 `<div class="example-row">
-                 <div class="example-id">${eidx}.</div>
+                 <div class="example-id">${eidx+1}.</div>
                  <div class='example-wrapper'>
                  `
                 
