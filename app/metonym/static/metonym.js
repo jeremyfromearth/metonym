@@ -44,6 +44,9 @@ function go() {
   // The latest Rasa results from the Metonym parser service
   var rasa;
 
+  // A mapping of uuids to rasa objects
+  var rasa_lookup;
+
   // -------------------------------------------------------------
   //
   // U.I.
@@ -60,6 +63,8 @@ function go() {
   var summary = el('summary');
   var examples_container = el('examples-container');
   var example_select = el('example-select');
+  var random_example_label = el('random-example-label');
+  var random_example_slider = el('random-example-range');
   var select_all_checkbox = el('select-examples-checkbox');
   var select_all_label = el('select-examples-label');
   var tree = TreeVisualization(content.clientWidth, content.clientHeight, '#svg')
@@ -114,6 +119,34 @@ function go() {
   select_all_checkbox.addEventListener('change', function(event) {
     var checked = event.target.checked;
     select_all_label.innerHTML = checked ? 'Deselect All' : 'Select All';
+    Object.keys(rasa_lookup).forEach(function(key) {
+      var idx = rasa_lookup[key];
+      var cb = el(`rasa-example-${idx}`).checked = checked;
+    });
+    random_example_slider.value = checked ? 1.0 : 0.0;
+    random_example_label.innerHTML = `Random (Probability ${checked ? "1.00" : "0.00"})`;
+  });
+
+  random_example_slider.addEventListener('input', function(event) {
+    var prob_str = event.target.value;;
+    if(event.target.value == 1) {
+      prob_str = "1.00";
+      select_all_checkbox.checked = true;
+      select_all_label.innerHTML = 'Deselect All';
+    }
+
+    if(event.target.value == 0) {
+      prob_str = "0.00";
+      select_all_checkbox.checked = false;
+      select_all_label.innerHTML = 'Select All';
+    }
+
+    random_example_label.innerHTML = `Random (Probability ${event.target.value})`;
+    Object.keys(rasa_lookup).forEach(function(key) {
+      var idx = rasa_lookup[key];
+      var checked = Math.random() < event.target.value;
+      var cb = el(`rasa-example-${idx}`).checked = checked;
+    });
   });
 
   example_select.addEventListener('change', function(event) {
@@ -182,19 +215,15 @@ function go() {
             raw_ast.value = JSON.stringify(JSON.parse(xhr.response).ast, null, 2);
           }
 
-          rasa = result.rasa;
-          rasa.rasa_nlu_data.common_examples.forEach(function(example, idx) {
-            example.uuid = make_uuid();
-            console.log(example);
-          });
-
-          if(rasa) {
+          if(result.rasa) {
+            rasa_lookup = {};
+            rasa = result.rasa;
             raw_rasa.value = JSON.stringify(rasa, null, 2);
-            var examples = rasa.rasa_nlu_data.common_examples;
+            var rasa_results = rasa.rasa_nlu_data.common_examples;
             var entity_data = {};
             select_all_checkbox.checked = true;
             select_all_label.innerHTML = 'Deselect All';
-            examples.forEach(function(item, idx) {
+            rasa_results.forEach(function(item, idx) {
               item.entities.forEach(function(ent, idx) {
                 if(entity_data[ent.entity]) {
                   entity_data[ent.entity].count += 1;
@@ -206,8 +235,6 @@ function go() {
                 }
               });
             });
-            console.log(examples.length + ' examples generated');
-            console.log(entity_data);
 
             clear('summary');
             clear('examples-container');
@@ -223,21 +250,24 @@ function go() {
             });
 
             entity_summary += '</ul>'
-            summary.innerHTML = `<h2>Number of Examples ${examples.length}</h2> ${entity_summary}`;
+            summary.innerHTML = `<h2>Number of Examples ${rasa_results.length}</h2> ${entity_summary}`;
 
-            var examples_str = '';
-            examples.forEach(function(example, eidx) {
+            var rasa_examples_str = '';
+            rasa_results.forEach(function(result, eidx) {
               var parts = [];
-              var text = example.text;
-              var entities = example.entities;
+              var uuid = make_uuid();
               var entity_idx_map = {}
+              var text = result.text;
+              var entities = result.entities;
+              
+              rasa_lookup[uuid] = eidx;
               entities.forEach(function(entity) {
                 entity_idx_map[entity.start] = entity;
               });
 
               // Wrap entities in colored labels
               var cidx = 0;
-              examples_str += 
+              rasa_examples_str += 
                 `<div class="example-row">
                  <div class="example-id">${eidx+1}.</div>
                  <div class='example-wrapper'>
@@ -246,29 +276,29 @@ function go() {
               while(cidx < text.length) {
                 if(entity_idx_map[cidx]) {
                   var ent = entity_idx_map[cidx];
-                  examples_str += `<div class="entity ${entity_data[ent.entity].color_class}"}">`;
+                  rasa_examples_str += `<div class="entity ${entity_data[ent.entity].color_class}"}">`;
                   while(cidx < ent.end+1) {
-                    examples_str += text[cidx];
+                    rasa_examples_str += text[cidx];
                     cidx++;
                   }
-                  examples_str += '</div>';
+                  rasa_examples_str += '</div>';
                 } else {
-                  examples_str += text[cidx]
+                  rasa_examples_str += text[cidx]
                   cidx++;
                 }
               }
 
-              examples_str += ` 
-                <input id='example-${eidx}' 
+              rasa_examples_str += ` 
+                <input id='rasa-example-${eidx}' 
                        type="checkbox" 
-                       value="${eidx}" 
+                       value="${uuid}" 
                        class="example-checkbox" 
                        checked="true">
                 </input>
                 </div></div>`;
             });
             
-            examples_container.innerHTML = examples_str;
+            examples_container.innerHTML = rasa_examples_str;
           }
         }
       } else {
