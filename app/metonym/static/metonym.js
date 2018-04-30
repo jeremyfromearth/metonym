@@ -223,6 +223,8 @@ function go() {
             var entity_data = {};
             select_all_checkbox.checked = true;
             select_all_label.innerHTML = 'Deselect All';
+            random_example_slider.value = 1.0;
+            random_example_label.innerHTML = `Random (Probability 1.00)`;
             rasa_results.forEach(function(item, idx) {
               item.entities.forEach(function(ent, idx) {
                 if(entity_data[ent.entity]) {
