@@ -1,5 +1,5 @@
 # metonym
-Metonym is a web-app and scripting language designed to help Chatbot developers quickly create training data for Rasa-NLU models. Creating training data for Rasa previously required writing JSON files by hand. Metonym enables the creation of trainging data for permutations of a given input by providing a simple syntax that is parsed and converted to Rasa ready training files.
+Metonym is a web-app and scripting language designed to help Chatbot developers quickly create training data for Rasa-NLU models. Creating training data for Rasa previously required writing JSON files by hand. Now, using Metonym developers can generate loads of train/test data without ever needing to edit a JSON file. Metonym consumes a simple domain specific syntax as input and outputs Rasa ready train/test data.
 
 
 ### Web-app Screenshots
