@@ -84,6 +84,12 @@ code {
   align-items: center;
 }
 
+.summary-stats {
+  padding: 0 0 1em;
+  margin: 0 0 1em;
+  border-bottom: 1px solid #eee;
+}
+
 .example-row {
   padding: 1em;
   display: flex;
@@ -233,26 +239,6 @@ code {
 .titlebar h1 {
   margin: 0;
   float: left;
-}
-
-.tool-container {
-  padding: 0.5em; 
-  margin-top: 0.5em; 
-  border: 1px solid #ccc; 
-  border-radius: 0.25em;
-}
-
-.tools-left {
-  float: left; 
-  width: 49%; 
-  min-width: 300px; 
-  margin-right: 1em;
-}
-
-.tools-right {
-  width: 49%; 
-  min-width: 300px; 
-  display: inline-block;
 }
 
 .node circle {

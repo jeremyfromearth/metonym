@@ -248,6 +248,7 @@ class MetonymParser(Parser):
     if self.next_char_is('('):
       result = self.first_of([
           self.expression,
+          self.optional,
           self.option_list,
           self.string
         ])
@@ -263,7 +264,8 @@ class MetonymParser(Parser):
     if options:
       last_option = \
         self.one_or_more(self.string) or \
-        self.one_or_more(self.requirement)
+        self.one_or_more(self.requirement) or \
+        self.one_or_more(self.optional)
 
       if last_option:
         last = Node('option')
@@ -376,7 +378,6 @@ class MetonymCompiler:
 class RasaCompiler(MetonymCompiler):
   def go(self, ast, intent_type):
     result = super(RasaCompiler, self).go(ast)
-    print(len(result))
     for r in result:
       r['intent'] = intent_type
     return json.dumps({
@@ -402,5 +403,6 @@ if __name__ == '__main__':
   if parser.index == len(parser.tokens):
     compiler = RasaCompiler()
     results = compiler.go(parser.output, 'test-intent')
+    print(json.dumps(json.loads(results), indent=2))
   else:
     print('Parser Error at index {}'.format(parser.index))

@@ -34,6 +34,18 @@ function go() {
 
   // -------------------------------------------------------------
   //
+  // State
+  //
+  // -------------------------------------------------------------
+
+  // The latest AST from the Metonym parser service
+  var ast;
+
+  // The latest Rasa results from the Metonym parser service
+  var rasa;
+
+  // -------------------------------------------------------------
+  //
   // U.I.
   //
   // -------------------------------------------------------------
@@ -45,9 +57,11 @@ function go() {
   var parse_btn = el('parse-btn');
   var raw_ast = el('raw-ast');
   var raw_rasa = el('raw-rasa');
-  var summary_container = el('summary-container');
+  var summary = el('summary');
   var examples_container = el('examples-container');
   var example_select = el('example-select');
+  var select_all_checkbox = el('select-examples-checkbox');
+  var select_all_label = el('select-examples-label');
   var tree = TreeVisualization(content.clientWidth, content.clientHeight, '#svg')
 
   examples.forEach(function(item, idx) {
@@ -97,6 +111,11 @@ function go() {
       show_tab(this.dataset.tab);
     });
 
+  select_all_checkbox.addEventListener('change', function(event) {
+    var checked = event.target.checked;
+    select_all_label.innerHTML = checked ? 'Deselect All' : 'Select All';
+  });
+
   example_select.addEventListener('change', function(event) {
     update_input();
   });
@@ -125,6 +144,23 @@ function go() {
     intent_input.value = example.intent;
   }
 
+  function make_uuid() {
+    var result = '';
+    var symbols = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    for(var i = 0; i < 32; i++) {
+      var index = Math.floor(Math.random() * symbols.length);
+      var char = symbols[index];
+      result += Math.random() > 0.5 ? symbols[index].toUpperCase() : symbols[index];
+    }
+    return result;
+  }
+
+  // -------------------------------------------------------------
+  //
+  // Service Calls
+  //
+  // -------------------------------------------------------------
+
   function parse_input() {
     tree.clear();
     raw_ast.value = '';
@@ -140,17 +176,24 @@ function go() {
           error_bar.style.display = 'block';
           error_bar.innerHTML = result.error;
         } else {
-          var ast = result.ast;
+          ast = result.ast;
           if(ast) {
             tree.create(Object.assign({}, ast));
             raw_ast.value = JSON.stringify(JSON.parse(xhr.response).ast, null, 2);
           }
 
-          var rasa = result.rasa;
+          rasa = result.rasa;
+          rasa.rasa_nlu_data.common_examples.forEach(function(example, idx) {
+            example.uuid = make_uuid();
+            console.log(example);
+          });
+
           if(rasa) {
             raw_rasa.value = JSON.stringify(rasa, null, 2);
             var examples = rasa.rasa_nlu_data.common_examples;
             var entity_data = {};
+            select_all_checkbox.checked = true;
+            select_all_label.innerHTML = 'Deselect All';
             examples.forEach(function(item, idx) {
               item.entities.forEach(function(ent, idx) {
                 if(entity_data[ent.entity]) {
@@ -166,16 +209,21 @@ function go() {
             console.log(examples.length + ' examples generated');
             console.log(entity_data);
 
-            clear('summary-container');
+            clear('summary');
             clear('examples-container');
 
-            var entity_summary = '<h3>Entities</h3><ul class="entity-list">';
+            var entity_summary = 
+              `<h3>Intent: ${intent_input.value}</h3> 
+               <h3>Entities</h3>
+               <ul class="entity-list">`;
+
             Object.keys(entity_data).forEach(function(item, idx) {
               var ent = entity_data[item]
               entity_summary += `<li class="entity-li ${ent.color_class}">${item}: ${ent.count}</li>`;
             });
+
             entity_summary += '</ul>'
-            summary_container.innerHTML = `<h2>Number of Examples ${examples.length}</h2> ${entity_summary}`;
+            summary.innerHTML = `<h2>Number of Examples ${examples.length}</h2> ${entity_summary}`;
 
             var examples_str = '';
             examples.forEach(function(example, eidx) {
@@ -211,7 +259,12 @@ function go() {
               }
 
               examples_str += ` 
-                <input type="checkbox" value="${eidx}" class="example-checkbox" checked="true"></input>
+                <input id='example-${eidx}' 
+                       type="checkbox" 
+                       value="${eidx}" 
+                       class="example-checkbox" 
+                       checked="true">
+                </input>
                 </div></div>`;
             });
             
