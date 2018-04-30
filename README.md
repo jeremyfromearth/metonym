@@ -1,28 +1,17 @@
 # metonym
-Domain specific language for generating analogous variations of textual inputs. The goal of this project is to more readily generate variations of text with entity annotations for use in systems such as Rasa NLU.
+Metonym is a web-app and scripting language designed to help Chatbot developers quickly create training data for Rasa-NLU models. Creating training data for Rasa previously required writing JSON files by hand. Metonym enables the creation of trainging data for permutations of a given input by providing a simple syntax that is parsed and converted to Rasa ready training files.
 
-### Grammar:
-```
-expression-list = (expression), {expression};
-expression = (option-list | requirement | string) [entity] | [optional];
-requirement = '[' option-list | string | requirement ']';
-optional = '(' option-list | string ')';
-option-list = {option} (string | requirement);
-option = (string | requirement, {requirement}) '|';
-string = term, {term};
-entity = ':' term;
-term = char, {char};
-char = letter, digit;
-letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
-       | "H" | "I" | "J" | "K" | "L" | "M" | "N"
-       | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
-       | "V" | "W" | "X" | "Y" | "Z" | "a" | "b"
-       | "c" | "d" | "e" | "f" | "g" | "h" | "i"
-       | "j" | "k" | "l" | "m" | "n" | "o" | "p"
-       | "q" | "r" | "s" | "t" | "u" | "v" | "w"
-       | "x" | "y" | "z" | "-" | "_" ;
-digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
-```
+
+### Web-app Screenshots
+![Metonym results featuring highlighted entities](./docs/images/metonym-01.png)
+__Metonym results featuring highlighted entities__
+
+![Abstract syntax tree returned by Metonym service](./docs/images/metonym-02.png)
+__Abstract syntax tree returned by Metonym service__
+
+![Raw results in JSON returned by Metonym service](./docs/images/metonym-03.png)
+__Raw results in JSON returned by Metonym service__
+
 
 **Simple Example:** `requirement[option-list] optional[string]`
 ```
@@ -122,3 +111,27 @@ Note that currently, the "intent" is not part of the syntax as it would be the s
   ]
 }
 ```
+
+### Grammar:
+```
+expression-list = (expression), {expression};
+expression = (option-list | requirement | string) [entity] | [optional];
+requirement = '[' option-list | string | requirement ']';
+optional = '(' option-list | string ')';
+option-list = {option} (string | requirement);
+option = (string | requirement, {requirement}) '|';
+string = term, {term};
+entity = ':' term;
+term = char, {char};
+char = letter, digit;
+letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+       | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+       | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+       | "V" | "W" | "X" | "Y" | "Z" | "a" | "b"
+       | "c" | "d" | "e" | "f" | "g" | "h" | "i"
+       | "j" | "k" | "l" | "m" | "n" | "o" | "p"
+       | "q" | "r" | "s" | "t" | "u" | "v" | "w"
+       | "x" | "y" | "z" | "-" | "_" ;
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9";
+```
+
