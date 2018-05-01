@@ -52,6 +52,7 @@ function go() {
   // U.I.
   //
   // -------------------------------------------------------------
+  var add_examples_btn = el('add-examples-btn');
   var content = el('content');
   var intent_input = el('intent-input');
   var metonym_input = el('metonym-input');
@@ -103,6 +104,11 @@ function go() {
   // U.I. Event Handlers
   //
   // -------------------------------------------------------------
+
+  add_examples_btn.addEventListener('click', function(event) {
+
+  });
+
   parse_btn.addEventListener('click', parse_input);
 
   window.addEventListener('resize', function(event) {
@@ -118,35 +124,11 @@ function go() {
 
   select_all_checkbox.addEventListener('change', function(event) {
     var checked = event.target.checked;
-    select_all_label.innerHTML = checked ? 'Deselect All' : 'Select All';
-    Object.keys(rasa_lookup).forEach(function(key) {
-      var idx = rasa_lookup[key];
-      var cb = el(`rasa-example-${idx}`).checked = checked;
-    });
-    random_example_slider.value = checked ? 1.0 : 0.0;
-    random_example_label.innerHTML = `Random (Probability ${checked ? "1.00" : "0.00"})`;
+    select_examples(checked ? 1.0 : 0.0, true);
   });
 
   random_example_slider.addEventListener('input', function(event) {
-    var prob_str = event.target.value;;
-    if(event.target.value == 1) {
-      prob_str = "1.00";
-      select_all_checkbox.checked = true;
-      select_all_label.innerHTML = 'Deselect All';
-    }
-
-    if(event.target.value == 0) {
-      prob_str = "0.00";
-      select_all_checkbox.checked = false;
-      select_all_label.innerHTML = 'Select All';
-    }
-
-    random_example_label.innerHTML = `Random (Probability ${event.target.value})`;
-    Object.keys(rasa_lookup).forEach(function(key) {
-      var idx = rasa_lookup[key];
-      var checked = Math.random() < event.target.value;
-      var cb = el(`rasa-example-${idx}`).checked = checked;
-    });
+    select_examples(event.target.value);
   });
 
   example_select.addEventListener('change', function(event) {
@@ -188,6 +170,30 @@ function go() {
     return result;
   }
 
+  function select_examples(prob, update_slider=false) {
+    var prob_str = prob;;
+    if(prob_str == 1) {
+      prob_str = "1.00";
+      select_all_checkbox.checked = true;
+      select_all_label.innerHTML = 'Deselect All';
+    }
+
+    if(prob_str == 0) {
+      prob_str = "0.00";
+      select_all_checkbox.checked = false;
+      select_all_label.innerHTML = 'Select All';
+    }
+
+    random_example_label.innerHTML = `Random (Probability ${prob})`;
+    Object.keys(rasa_lookup).forEach(function(key) {
+      var idx = rasa_lookup[key];
+      var checked = Math.random() <= prob;
+      var cb = el(`rasa-example-${idx}`).checked = checked;
+    });
+
+    if(update_slider) random_example_slider.value = prob;
+  }
+
   // -------------------------------------------------------------
   //
   // Service Calls
@@ -221,10 +227,7 @@ function go() {
             raw_rasa.value = JSON.stringify(rasa, null, 2);
             var rasa_results = rasa.rasa_nlu_data.common_examples;
             var entity_data = {};
-            select_all_checkbox.checked = true;
-            select_all_label.innerHTML = 'Deselect All';
-            random_example_slider.value = 1.0;
-            random_example_label.innerHTML = `Random (Probability 1.00)`;
+            select_examples(1.0, true);
             rasa_results.forEach(function(item, idx) {
               item.entities.forEach(function(ent, idx) {
                 if(entity_data[ent.entity]) {
