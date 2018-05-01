@@ -91,7 +91,7 @@ code {
 }
 
 .example-row {
-  padding: 1em;
+  padding: 0.2em;
   display: flex;
   flex-direction: row;
 }

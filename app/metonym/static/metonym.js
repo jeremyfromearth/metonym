@@ -47,6 +47,9 @@ function go() {
   // A mapping of uuids to rasa objects
   var rasa_lookup;
 
+  // Rasa output cache
+  var rasa_output = {};
+
   // -------------------------------------------------------------
   //
   // U.I.
@@ -106,7 +109,15 @@ function go() {
   // -------------------------------------------------------------
 
   add_examples_btn.addEventListener('click', function(event) {
+    Object.keys(rasa_lookup).forEach(function(key) {
+      var idx = rasa_lookup[key];
+      var checkbox = el(`rasa-example-${idx}`);
+      if(checkbox.checked) {
+        rasa_output[key] = rasa.rasa_nlu_data.common_examples[rasa_lookup[key]];  
+      }
+    });
 
+    console.log(rasa_output);
   });
 
   parse_btn.addEventListener('click', parse_input);
