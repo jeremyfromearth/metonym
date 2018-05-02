@@ -59,12 +59,15 @@ function go() {
   var content = el('content');
   var intent_input = el('intent-input');
   var metonym_input = el('metonym-input');
+  var clear_output_button = el('clear-output-btn');
   var error_bar = el('error-bar');
+  var output_count_txt = el('output-count-txt');
   var parse_btn = el('parse-btn');
   var raw_ast = el('raw-ast');
   var raw_rasa = el('raw-rasa');
   var results_summary = el('results-summary');
   var results_container = el('results-container');
+  var save_output_button = el('save-output-btn');
   var metonym_example_select = el('metonym-example-select');
   var random_select_label = el('random-select-label');
   var random_select_slider = el('random-select-range');
@@ -84,6 +87,31 @@ function go() {
   // U.I. Update Methods
   //
   // -------------------------------------------------------------
+  
+  function select_output_with_prob(prob, update_slider=false) {
+    var prob_str = prob;;
+    if(prob_str == 1) {
+      prob_str = "1.00";
+      select_all_checkbox.checked = true;
+      select_all_label.innerHTML = 'Deselect All';
+    }
+
+    if(prob_str == 0) {
+      prob_str = "0.00";
+      select_all_checkbox.checked = false;
+      select_all_label.innerHTML = 'Select All';
+    }
+
+    random_select_label.innerHTML = `Random (Probability ${prob})`;
+    Object.keys(lookup).forEach(function(key) {
+      var idx = lookup[key];
+      var checked = Math.random() <= prob;
+      var cb = el(`rasa-example-${idx}`).checked = checked;
+    });
+
+    if(update_slider) random_select_slider.value = prob;
+  }
+
   function show_tab(id) {
     var tabs = document.getElementsByClassName('content-tab');
     for (var i = 0; i < tabs.length; i++) {
@@ -116,6 +144,13 @@ function go() {
         output[key] = rasa.rasa_nlu_data.common_examples[lookup[key]];  
       }
     });
+
+    output_count_txt.innerHTML = `Output: ${Object.keys(output).length} train/test examples`;
+  });
+
+  clear_output_button.addEventListener('click', function(event) {
+    output = {};
+    output_count_txt.innerHTML = `Output: ${Object.keys(output).length} train/test examples`;
   });
 
   parse_btn.addEventListener('click', parse_input);
@@ -130,6 +165,21 @@ function go() {
     .on('mousedown', function(evt) {
       show_tab(this.dataset.tab);
     });
+
+  save_output_button.addEventListener('click', function(event) {
+    var out = {
+      'rasa_nlu_data': {
+        'common_examples': Object.values(output)
+      }
+    };
+    var now = Date.now();
+    var anchor = document.createElement('a');
+    var blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
+    anchor.download = `${now}-metonym-out.json`;
+    anchor.href = window.URL.createObjectURL(blob);
+    anchor.dataset.downloadurl = ['application/javascript', anchor.download, anchor.href].join(':');
+    anchor.click();
+  });
 
   select_all_checkbox.addEventListener('change', function(event) {
     var checked = event.target.checked;
@@ -179,29 +229,7 @@ function go() {
     return result;
   }
 
-  function select_output_with_prob(prob, update_slider=false) {
-    var prob_str = prob;;
-    if(prob_str == 1) {
-      prob_str = "1.00";
-      select_all_checkbox.checked = true;
-      select_all_label.innerHTML = 'Deselect All';
-    }
-
-    if(prob_str == 0) {
-      prob_str = "0.00";
-      select_all_checkbox.checked = false;
-      select_all_label.innerHTML = 'Select All';
-    }
-
-    random_select_label.innerHTML = `Random (Probability ${prob})`;
-    Object.keys(lookup).forEach(function(key) {
-      var idx = lookup[key];
-      var checked = Math.random() <= prob;
-      var cb = el(`rasa-example-${idx}`).checked = checked;
-    });
-
-    if(update_slider) random_select_slider.value = prob;
-  }
+  
 
   // -------------------------------------------------------------
   //

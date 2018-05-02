@@ -60,6 +60,10 @@ code {
   display: flex;
 }
 
+.control-container {
+  margin-bottom: 1em;
+}
+
 .output-content-tab {
 }
 
