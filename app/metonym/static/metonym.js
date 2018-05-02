@@ -4,7 +4,7 @@ function go() {
   // Example Data
   //
   // -------------------------------------------------------------
-  var examples = [
+  var metonym_examples = [
     {
       title: 'Asking for Directions', 
       syntax: '[Where can I find|How do I get to|Where is] [the|a|the nearset|a nearby] [market]:location?',
@@ -45,39 +45,38 @@ function go() {
   var rasa;
 
   // A mapping of uuids to rasa objects
-  var rasa_lookup;
+  var lookup;
 
   // Rasa output cache
-  var rasa_output = {};
+  var output = {};
 
   // -------------------------------------------------------------
   //
   // U.I.
   //
   // -------------------------------------------------------------
-  var add_examples_btn = el('add-examples-btn');
+  var add_output_btn = el('add-output-btn');
   var content = el('content');
   var intent_input = el('intent-input');
   var metonym_input = el('metonym-input');
   var error_bar = el('error-bar');
-  var overview_txt = el('overview-text');
   var parse_btn = el('parse-btn');
   var raw_ast = el('raw-ast');
   var raw_rasa = el('raw-rasa');
-  var summary = el('summary');
-  var examples_container = el('examples-container');
-  var example_select = el('example-select');
-  var random_example_label = el('random-example-label');
-  var random_example_slider = el('random-example-range');
-  var select_all_checkbox = el('select-examples-checkbox');
-  var select_all_label = el('select-examples-label');
+  var results_summary = el('results-summary');
+  var results_container = el('results-container');
+  var metonym_example_select = el('metonym-example-select');
+  var random_select_label = el('random-select-label');
+  var random_select_slider = el('random-select-range');
+  var select_all_checkbox = el('select-all-checkbox');
+  var select_all_label = el('select-all-label');
   var tree = TreeVisualization(content.clientWidth, content.clientHeight, '#svg')
 
-  examples.forEach(function(item, idx) {
+  metonym_examples.forEach(function(item, idx) {
     var o = document.createElement("option", item);
     o.text = item.title;
     o.value = idx;;
-    example_select.options.add(o, item);
+    metonym_example_select.options.add(o, item);
   });
 
   // -------------------------------------------------------------
@@ -90,6 +89,7 @@ function go() {
     for (var i = 0; i < tabs.length; i++) {
         tabs[i].style.display = 'none'; 
     }
+
     var tab = el(id);
     if(tab) tab.style.display = 'flex'; 
 
@@ -108,16 +108,14 @@ function go() {
   //
   // -------------------------------------------------------------
 
-  add_examples_btn.addEventListener('click', function(event) {
-    Object.keys(rasa_lookup).forEach(function(key) {
-      var idx = rasa_lookup[key];
+  add_output_btn.addEventListener('click', function(event) {
+    Object.keys(lookup).forEach(function(key) {
+      var idx = lookup[key];
       var checkbox = el(`rasa-example-${idx}`);
       if(checkbox.checked) {
-        rasa_output[key] = rasa.rasa_nlu_data.common_examples[rasa_lookup[key]];  
+        output[key] = rasa.rasa_nlu_data.common_examples[lookup[key]];  
       }
     });
-
-    console.log(rasa_output);
   });
 
   parse_btn.addEventListener('click', parse_input);
@@ -135,14 +133,14 @@ function go() {
 
   select_all_checkbox.addEventListener('change', function(event) {
     var checked = event.target.checked;
-    select_examples(checked ? 1.0 : 0.0, true);
+    select_output_with_prob(checked ? 1.0 : 0.0, true);
   });
 
-  random_example_slider.addEventListener('input', function(event) {
-    select_examples(event.target.value);
+  random_select_slider.addEventListener('input', function(event) {
+    select_output_with_prob(event.target.value);
   });
 
-  example_select.addEventListener('change', function(event) {
+  metonym_example_select.addEventListener('change', function(event) {
     update_input();
   });
 
@@ -165,7 +163,7 @@ function go() {
   }
 
   function update_input() {
-    var example = examples[example_select.value];
+    var example = metonym_examples[metonym_example_select.value];
     metonym_input.value = example.syntax;
     intent_input.value = example.intent;
   }
@@ -181,7 +179,7 @@ function go() {
     return result;
   }
 
-  function select_examples(prob, update_slider=false) {
+  function select_output_with_prob(prob, update_slider=false) {
     var prob_str = prob;;
     if(prob_str == 1) {
       prob_str = "1.00";
@@ -195,14 +193,14 @@ function go() {
       select_all_label.innerHTML = 'Select All';
     }
 
-    random_example_label.innerHTML = `Random (Probability ${prob})`;
-    Object.keys(rasa_lookup).forEach(function(key) {
-      var idx = rasa_lookup[key];
+    random_select_label.innerHTML = `Random (Probability ${prob})`;
+    Object.keys(lookup).forEach(function(key) {
+      var idx = lookup[key];
       var checked = Math.random() <= prob;
       var cb = el(`rasa-example-${idx}`).checked = checked;
     });
 
-    if(update_slider) random_example_slider.value = prob;
+    if(update_slider) random_select_slider.value = prob;
   }
 
   // -------------------------------------------------------------
@@ -233,12 +231,12 @@ function go() {
           }
 
           if(result.rasa) {
-            rasa_lookup = {};
+            lookup = {};
             rasa = result.rasa;
             raw_rasa.value = JSON.stringify(rasa, null, 2);
             var rasa_results = rasa.rasa_nlu_data.common_examples;
             var entity_data = {};
-            select_examples(1.0, true);
+            select_output_with_prob(1.0, true);
             rasa_results.forEach(function(item, idx) {
               item.entities.forEach(function(ent, idx) {
                 if(entity_data[ent.entity]) {
@@ -252,8 +250,8 @@ function go() {
               });
             });
 
-            clear('summary');
-            clear('examples-container');
+            clear('results-summary');
+            clear('results-container');
 
             var entity_summary = 
               `<h3>Intent: ${intent_input.value}</h3> 
@@ -266,7 +264,7 @@ function go() {
             });
 
             entity_summary += '</ul>'
-            summary.innerHTML = `<h2>Number of Examples ${rasa_results.length}</h2> ${entity_summary}`;
+            results_summary.innerHTML = `<h2>Number of Examples ${rasa_results.length}</h2> ${entity_summary}`;
 
             var rasa_examples_str = '';
             rasa_results.forEach(function(result, eidx) {
@@ -276,7 +274,7 @@ function go() {
               var text = result.text;
               var entities = result.entities;
               
-              rasa_lookup[uuid] = eidx;
+              lookup[uuid] = eidx;
               entities.forEach(function(entity) {
                 entity_idx_map[entity.start] = entity;
               });
@@ -286,9 +284,7 @@ function go() {
               rasa_examples_str += 
                 `<div class="example-row">
                  <div class="example-id">${eidx+1}.</div>
-                 <div class='example-wrapper'>
-                 `
-                
+                 <div class='example-wrapper'>`
               while(cidx < text.length) {
                 if(entity_idx_map[cidx]) {
                   var ent = entity_idx_map[cidx];
@@ -314,7 +310,7 @@ function go() {
                 </div></div>`;
             });
             
-            examples_container.innerHTML = rasa_examples_str;
+            results_container.innerHTML = rasa_examples_str;
           }
         }
       } else {
@@ -333,7 +329,7 @@ function go() {
   // -------------------------------------------------------------
   update_input();
   parse_input();
-  show_tab('output-tab');
+  show_tab('results-tab');
 }
 
 window.addEventListener('load', go);
