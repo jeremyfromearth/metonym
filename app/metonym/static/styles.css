@@ -207,16 +207,16 @@ code {
   margin: 0 0.1em 0 0.1em;
 }
 
-.entity-1 {background-color: #0984e3;}
-.entity-2 {background-color: #fdcb6e;}
-.entity-3 {background-color: #81ecec;}
-.entity-4 {background-color: #fab1a0;}
-.entity-5 {background-color: #ff7675;}
-.entity-6 {background-color: #fd79a8;}
-.entity-7 {background-color: #d63031;}
-.entity-8 {background-color: #e17055;}
-.entity-9 {background-color: #fdcb6e;}
-.entity-10 {background-color: #00b894;}
+.entity-1 {background-color: #FFC312;}
+.entity-2 {background-color: #C4E538;}
+.entity-3 {background-color: #12CBC4;}
+.entity-4 {background-color: #FDA7DF;}
+.entity-5 {background-color: #ED4C67;}
+.entity-6 {background-color: #F79F1F;}
+.entity-7 {background-color: #A3CB38;}
+.entity-8 {background-color: #1289A7;}
+.entity-9 {background-color: #D980FA;}
+.entity-10 {background-color: #B53471;}
 
 .raw-result {
   resize:none;

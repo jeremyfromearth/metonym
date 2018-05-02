@@ -265,13 +265,14 @@ function go() {
             var rasa_results = rasa.rasa_nlu_data.common_examples;
             var entity_data = {};
             select_output_with_prob(1.0, true);
-            rasa_results.forEach(function(item, idx) {
+            rasa_results.forEach(function(item) {
               item.entities.forEach(function(ent, idx) {
                 if(entity_data[ent.entity]) {
                   entity_data[ent.entity].count += 1;
                 } else {
+                  var color_class = `entity-${((idx)%10)+1}`;
                   entity_data[ent.entity] = {
-                    color_class: 'entity-' + ((idx+1)%10),
+                    color_class: color_class,
                     count: 1
                   };
                 }
