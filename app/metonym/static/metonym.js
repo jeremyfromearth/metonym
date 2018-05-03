@@ -66,7 +66,7 @@ function go() {
   var raw_ast = el('raw-ast');
   var raw_rasa = el('raw-rasa');
   var results_summary = el('results-summary');
-  var results_container = el('results-container');
+  var results_list = el('results-list');
   var save_output_button = el('save-output-btn');
   var metonym_example_select = el('metonym-example-select');
   var random_select_label = el('random-select-label');
@@ -90,19 +90,20 @@ function go() {
   
   function select_output_with_prob(prob, update_slider=false) {
     var prob_str = prob;;
-    if(prob_str == 1) {
+    if(prob_str == 1.0) {
       prob_str = "1.00";
       select_all_checkbox.checked = true;
-      select_all_label.innerHTML = 'Deselect All';
     }
 
-    if(prob_str == 0) {
+    if(prob_str == 0.0) {
       prob_str = "0.00";
-      select_all_checkbox.checked = false;
-      select_all_label.innerHTML = 'Select All';
     }
 
-    random_select_label.innerHTML = `Random (Probability ${prob})`;
+    if(prob < 1.0) select_all_checkbox.checked = false;
+
+    if(prob_str.length == 3) prob_str += '0';
+
+    random_select_label.innerHTML = `Randomize (Probability ${prob_str})`;
     Object.keys(lookup).forEach(function(key) {
       var idx = lookup[key];
       var checked = Math.random() <= prob;
@@ -145,12 +146,12 @@ function go() {
       }
     });
 
-    output_count_txt.innerHTML = `Output: ${Object.keys(output).length} train/test examples`;
+    output_count_txt.innerHTML = `${Object.keys(output).length} train/test examples`;
   });
 
   clear_output_button.addEventListener('click', function(event) {
     output = {};
-    output_count_txt.innerHTML = `Output: ${Object.keys(output).length} train/test examples`;
+    output_count_txt.innerHTML = `${Object.keys(output).length} train/test examples`;
   });
 
   parse_btn.addEventListener('click', parse_input);
@@ -172,7 +173,8 @@ function go() {
         'common_examples': Object.values(output)
       }
     };
-    var now = Date.now();
+
+    var now = new Date().toString();
     var anchor = document.createElement('a');
     var blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' });
     anchor.download = `${now}-metonym-out.json`;
@@ -280,7 +282,7 @@ function go() {
             });
 
             clear('results-summary');
-            clear('results-container');
+            clear('results-list');
 
             var entity_summary = 
               `<h3>Intent: ${intent_input.value}</h3> 
@@ -293,7 +295,7 @@ function go() {
             });
 
             entity_summary += '</ul>'
-            results_summary.innerHTML = `<h2>Number of Examples ${rasa_results.length}</h2> ${entity_summary}`;
+            results_summary.innerHTML = `<h2>Results</h2><h3>Number of examples: ${rasa_results.length}</h3> ${entity_summary}`;
 
             var rasa_examples_str = '';
             rasa_results.forEach(function(result, eidx) {
@@ -339,7 +341,7 @@ function go() {
                 </div></div>`;
             });
             
-            results_container.innerHTML = rasa_examples_str;
+            results_list.innerHTML = rasa_examples_str;
           }
         }
       } else {

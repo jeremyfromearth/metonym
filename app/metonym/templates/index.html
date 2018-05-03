@@ -20,29 +20,22 @@
         </div>
       </div>
       <div id='content' class='content'>
-        <div id='results-tab' class='content-tab output-content-tab'>
-          <div class='output-container'>
+        <div id='results-tab' class='content-tab'>
+          <div class='results-container'>
             <div id='results-summary' class='summary-stats'></div>
-            <div class='control-container'>
-              <input id='select-all-checkbox' type='checkbox'>
-              <label id='select-all-label'>Select All</label>
+            <div id='results' class='results'>
+              <div class='control-container'>
+                <input id='select-all-checkbox' class='control' type='checkbox'>
+                <label id='select-all-label' class='control'>Select All | </label>
+                <div id='random-select-label' class='control'>Randomize (Probability 1.00)</div>
+                <input id='random-select-range' type='range' min='0' max='1' step='0.01' value='1' class='control'></input>
+                <input id='add-output-btn' class='button-primary pure-button control' type='button' value='Add'></input>
+                <input id='clear-output-btn' class='button-primary pure-button control' type='button' value='Clear'></input>
+                <input id='save-output-btn' class='button-primary pure-button control' type='button' value='Export'></input>
+                <div id='output-count-txt' class='control'>0 test/train examples</div>
+              </div>
+              <div id='results-list' class='results-list'></div>
             </div>
-            <div class='control-container'>
-              <div id='random-select-label'>Random (Probability 1.00)</div>
-              <input id='random-select-range' type='range' min='0' max='1' step='0.01' value='1'></input>
-            </div>
-            <div class='control-container'>
-              <input id='add-output-btn' class='button-primary pure-button' type='button' value='Add to Output'></input>
-            </div>
-            <div class='control-container'>
-              <input id='clear-output-btn' class='button-primary pure-button' type='button' value='Clear Output'></input>
-            </div>
-            <div class='control-container'>
-              <div id='output-count-txt'>Output: 23 examples</div>
-              <input id='save-output-btn' class='button-primary pure-button' type='button' value='Save to File'></input>
-            </div>
-          </div>
-          <div id='results-container' class='results-container'>
           </div>
         </div>
         <div id='tree-view-tab' class='content-tab'>
