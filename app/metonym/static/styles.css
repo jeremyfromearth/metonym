@@ -152,6 +152,15 @@ code {
   flex: 4;
 }
 
+.heading {
+  display: flex;
+  align-items: center;
+}
+
+.heading a {
+  color: #ED4C67;
+}
+
 .menu-container {
   float: right;
 }
