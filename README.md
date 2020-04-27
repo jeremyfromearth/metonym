@@ -1,7 +1,7 @@
 # metonym
 Metonym is a web-app designed to help Chatbot developers quickly create training data for Rasa-NLU models. Creating training data for Rasa previously required writing JSON files by hand. Now, using Metonym developers can generate loads of train/test data without ever needing to edit a JSON file. Metonym consumes a simple domain specific syntax as input and outputs Rasa ready train/test data.
 
-**Simple Example:** `requirement[option-list] optional[string]`
+**Simple Example:** `requirement[option-list] optional(string)`
 ```
 input:
   [this|that|another] (thing)
@@ -22,7 +22,7 @@ Consider the excerpt from the [Wikipedia article for the Roland JX-3P Synthesize
 
 __Syntax Example__
 ```
-[Who | [What | which] [company | brand]]:make [created|built|designed|produced] the [JX-3P]:make (synthesizer|keyboard|synth)?
+[Who | [What | which] [company | brand]]:make [created|built|designed|produced] the [JX-3P]:model (synthesizer|keyboard|synth)?
 ```
 
 __AST (Abstract Syntax Tree) Example__
