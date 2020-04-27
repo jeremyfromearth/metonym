@@ -22,7 +22,7 @@ Consider the excerpt from the [Wikipedia article for the Roland JX-3P Synthesize
 
 __Syntax Example__
 ```
-[Who | [What | which] [company | brand]]:make [created|built|designed|produced] the [JX-3P]:model (synthesizer|keyboard|synth)?
+[Who | [[What | which] [company | brand]]]:make [created|built|designed|produced] the [JX-3P]:model (synthesizer|keyboard|synth)?
 ```
 
 __AST (Abstract Syntax Tree) Example__
